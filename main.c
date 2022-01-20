@@ -1,21 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdint.h>
 
-void initArr(int *res, int n)
-{
-    for (int i = 0; i < n; i++)
-    {
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0')
+
+static int seed = 5;
+
+void initArr(int *res, int n) {
+    for (int i = 0; i < n; i++) {
         res[i] = 0;
     }
 }
 
-int *mkArr(int n)
-{
+int *mkArr(int n) {
     int *res = NULL;
     res = malloc(sizeof(int) * n);
-    if (res == NULL)
-    {
+    if (res == NULL) {
         printf("MALLOC FAILURE");
         exit(EXIT_FAILURE);
     }
@@ -23,83 +29,74 @@ int *mkArr(int n)
     return res;
 }
 
-void printArr(char *msg, int *arr, int n)
-{
+float *mkArr_f(int n) {
+    float *res = NULL;
+    res = malloc(sizeof(float) * n);
+    if (res == NULL) {
+        printf("MALLOC FAILURE");
+        exit(EXIT_FAILURE);
+    }
+    return res;
+}
+
+void printArr(char *msg, int *arr, int n) {
     printf("%s: ", msg);
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         printf("%d", arr[i]);
-        if (i == n - 1)
-        {
+        if (i == n - 1) {
             printf("\n");
-        }
-        else
-        {
+        } else {
             printf(", ");
         }
     }
     printf("\n");
 }
 
-void neumann(int n, int laps, int *res)
-{
-    for (int i = 0; i < laps; i++)
-    {
+void printArr_f(char *msg, float *arr, int n) {
+    printf("%s: ", msg);
+    for (int i = 0; i < n; i++) {
+        printf("%f", arr[i]);
+        if (i == n - 1) {
+            printf("\n");
+        } else {
+            printf(", ");
+        }
+    }
+    printf("\n");
+}
+
+void neumann(int n, int laps, int *res) {
+    for (int i = 0; i < laps; i++) {
         res[i] = n;
         n = ((n * n) / 100) % 10000;
     }
 }
 
-void diceThrow(int sides, int throws, int *res)
-{ // "sides" is length of res... let's consider that a coin is kinda like a 2-sided die
-    for (int i = 0; i < throws; i++)
-    {
+void diceThrow(int sides, int throws,
+               int *res) { // "sides" is length of res... let's consider that a coin is kinda like a 2-sided die
+    for (int i = 0; i < throws; i++) {
         res[rand() % sides]++;
     }
 }
 
-void myLCG(int a, int c, int m, int *res, int n, int x_0)
-{
-    int x_prev;
-    for (int i = 0; i < n; i++)
-    {
-        if (i == 0)
-        {
-            x_prev = x_0;
-        }
-        else
-        {
-            x_prev = res[i - 1];
-        }
-        res[i] = (x_prev * a + c) % m;
-    }
-}
-
-/*
 int intRand() {
-    return (_ * 5 + 1) % 16;
+    seed = (seed * 5 + 1) % 16;
+    return seed;
 }
-*/
 
-void myLCG_float(int a, int c, int m, float *res, int n, float x_0)
-{
-    float x_prev;
-    for (int i = 0; i < n; i++)
-    {
-        if (i == 0)
-        {
-            x_prev = x_0;
-        }
-        else
-        {
-            x_prev = res[i - 1];
-        }
-        res[i] = (x_prev * a + c) % m;
+float floatRand() {
+    seed = (seed * 5 + 1) % 16;
+    return (float) seed / 16;
+}
+
+void LCG(int a, int c, int m, int n, int *res) {
+    for (int i = 0; i < n; i++) {
+        seed = (seed * a + c) % m;
+        res[i] = seed;
     }
 }
 
-int main()
-{
+int main() {
     srand(time(NULL));
     int laps = 100;
     int *arr = mkArr(laps);
@@ -129,8 +126,7 @@ int main()
     printf("########### 4 ###########\n");
     int sides = 2;
     int *coinArr = mkArr(sides);
-    for (int i = 10; i <= 1000; i *= 10)
-    {
+    for (int i = 10; i <= 1000; i *= 10) {
         diceThrow(sides, i, coinArr);
         printArr("coin flips", coinArr, sides);
         initArr(coinArr, sides);
@@ -141,8 +137,7 @@ int main()
     printf("########### 5 ###########\n");
     sides = 6;
     int *d6Arr = mkArr(sides);
-    for (int i = 10; i <= 1000; i *= 10)
-    {
+    for (int i = 10; i <= 1000; i *= 10) {
         diceThrow(sides, i, d6Arr);
         printArr("d6 throws", d6Arr, sides);
         initArr(d6Arr, sides);
@@ -150,8 +145,7 @@ int main()
 
     sides = 10;
     int *d10Arr = mkArr(sides);
-    for (int i = 10; i <= 1000; i *= 10)
-    {
+    for (int i = 10; i <= 1000; i *= 10) {
         diceThrow(sides, i, d10Arr);
         printArr("d10 throws", d10Arr, sides);
         initArr(d10Arr, sides);
@@ -162,8 +156,81 @@ int main()
     printf("########### 6 ###########\n");
     int n = 32;
     arr = mkArr(n);
-    myLCG(5, 1, 16, arr, n, 5);
-    printArr("x_i+1 = (5 * x_i + 1) mod 16", arr, n);
+    for (int i = 0; i < n; i++) {
+        arr[i] = intRand();
+    }
+    printArr("'x_i + 1 = (5 * x_i + 1) mod 16'", arr, n);
+
+    printf("########### 7 ###########\n");
+    float *arr_f = mkArr_f(n);
+    for (int i = 0; i < n; i++) {
+        arr_f[i] = floatRand();
+    }
+    printArr_f("'x_i + 1 = ((5 * x_i + 1) mod 16) / 16'", arr_f, n);
+
+    printf("########### 8 ###########\n");
+    initArr(arr, n);
+    LCG(3, 6, 81, n, arr);
+    printArr("'x_i + 1 = (3 * x_i + 6) mod 81'", arr, n);
+    // a=3, c=6, m=81 converges to 78 at i=4
+    initArr(arr, n);
+    LCG(2, 4, 14, n, arr);
+    printArr("'x_i + 1 = (2 * x_i + 4) mod 14'", arr, n);
+    // a=2, c=4, m=14 creates a very short period: 6, 2, 8, ...
+
+    printf("########### 9 ###########\n");
+    /* L'Ecuyer, 1999
+     * https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwi6-_HcusD1AhVChRoKHRulC6YQFnoECAcQAQ&url=https%3A%2F%2Fwww.ams.org%2Fjournals%2Fmcom%2F1999-68-225%2FS0025-5718-99-00996-5%2FS0025-5718-99-00996-5.pdf&usg=AOvVaw0kDbsjp2F_xPvvY4rPEbcH
+     *
+     * choosing a=0 gives us a maximal period (m-1), but the generated sequences are obviously not even random-**looking**
+     *
+     * L'Ecuyer points out that choosing m=2^x and c=/=0, with c odd and a%8=5, gives us sequences with major limitations:
+     * mostly, lower order bits then have a short period. With a large x and only using higher order bits of our results,
+     * we can make it work, but we're only working with 32 bits here.
+     *
+     * We can now look at c=0, m=largest prime < 2³¹, and a such as there exists a y such as (a*y)%m=1
+     * we can then use a or y, and get the same results
+     * for example:
+     * m=2039, a=393 or 799
+     * m=32749, a=22661 or 23234
+     * ...
+     */
+
+    printf("########### 10 ###########\n");
+    /*
+     * gsl_rng.h: https://www.gnu.org/software/gsl/doc/html/rng.html
+     * sodium.h: https://stackoverflow.com/questions/822323/how-to-generate-a-random-int-in-c/39475626#39475626
+     */
+
+    printf("########### 11 ###########\n");
+    /*
+     * TestU01.h: http://simul.iro.umontreal.ca/testu01/tu01.html
+     */
+
+    printf("########### EXTRA ###########\n");
+
+    // inspired by https://en.wikipedia.org/wiki/Linear-feedback_shift_register
+    uint8_t first = 6;
+    uint8_t current = first;
+    uint8_t bit;
+
+    do {
+        printf(BYTE_TO_BINARY_PATTERN"-->", BYTE_TO_BINARY(current));
+        bit = (current ^ (current >> 1)) & 1u;
+        /*
+         * 0 1 1 0
+         *                      -xor-> 0 1 0 1
+         * 0 1 1 0 -r1-> 0 0 1 1
+         */
+        current = (current >> 1) | (bit << 3); //(bit << (n-1)) with n number of bits considered
+        /*
+         * 0 1 1 0 -r1-> 0 0 1 1
+         *                       -or-> 1 0 1 1
+         * 0 1 0 1 -l3-> 1 0 0 0
+         */
+    } while (current != first);
+    printf(BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(current));
+
 
     return 0;
 }
