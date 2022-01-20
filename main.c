@@ -3,6 +3,7 @@
 #define LAPS 100
 
 void neumann(int n, int laps) {
+    printf("init Neumann\n");
     for (int i = 0; i < laps; i++) {
         printf("i=%d; %04d\n", i, n);
         n = ((n * n) / 100) % 10000;
@@ -16,6 +17,9 @@ int main() {
 
     printf("###########2###########\n");
     neumann(4100, LAPS); // is stuck in a short period at i%4==0 (4100, 8100, 6100, 2100, ...)
+    neumann(1324, LAPS); // reaches 4100 at i=92, and gets stuck in the above-mentioned period then
+    neumann(1301, LAPS); // reaches 6100 at i=10, and gets stuck in the above-mentioned period then
+    neumann(3141, LAPS); // reaches 100 at i=7 and just stays there
 
     return 0;
 }
