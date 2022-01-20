@@ -3,7 +3,7 @@
 
 int main() {
 
-    int n = 1234;
+    int n = 1234; // converges towards 0, reaches it at i=54
     for (int i = 0; i < LAPS; i++) {
         n = n * n;
         //01522756
@@ -13,7 +13,6 @@ int main() {
         //5227
         printf("i=%d; %04d\n", i, n);
     }
-
 
     return 0;
 }
