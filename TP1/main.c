@@ -1,3 +1,7 @@
+//
+// Created by aldrai on 20/01/2022.
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
