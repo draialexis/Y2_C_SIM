@@ -16,16 +16,17 @@
 
 static int seed = 5;
 
-void initArr(int *res, int n) {
-    for (int i = 0; i < n; i++) {
-        res[i] = 0;
-    }
+void initArr(int *res, int n)
+{
+    for (int i = 0; i < n; i++) res[i] = 0;
 }
 
-int *mkArr(int n) {
+int *mkArr(int n)
+{
     int *res = NULL;
     res = malloc(sizeof(int) * n);
-    if (res == NULL) {
+    if (res == NULL)
+    {
         printf("MALLOC FAILURE");
         exit(EXIT_FAILURE);
     }
@@ -33,77 +34,83 @@ int *mkArr(int n) {
     return res;
 }
 
-float *mkArr_f(int n) {
+float *mkArr_f(int n)
+{
     float *res = NULL;
     res = malloc(sizeof(float) * n);
-    if (res == NULL) {
+    if (res == NULL)
+    {
         printf("MALLOC FAILURE");
         exit(EXIT_FAILURE);
     }
     return res;
 }
 
-void printArrMsg(char *msg, int *arr, int n) {
-    printf("%s: ", msg);
-    for (int i = 0; i < n; i++) {
-        printf("%d", arr[i]);
-        if (i == n - 1) {
-            printf("\n");
-        } else {
-            printf(", ");
-        }
+void printArrMsg(char *msg, int *arr, int n)
+{
+    printf("%s\n", msg);
+    for (int i = 0; i < n; i++)
+    {
+        printf("%d ", arr[i]);
+        if ((i % 5 == 4) || (i == n - 1)) printf("\n");
     }
-    printf("\n");
 }
 
-void printArrMsg_f(char *msg, float *arr, int n) {
-    printf("%s: ", msg);
-    for (int i = 0; i < n; i++) {
-        printf("%f", arr[i]);
-        if (i == n - 1) {
-            printf("\n");
-        } else {
-            printf(", ");
-        }
+void printArrMsg_f(char *msg, double *arr, int n)
+{
+    printf("%s\n", msg);
+    for (int i = 0; i < n; i++)
+    {
+        printf("%10f ", arr[i]);
+        if ((i % 5 == 4) || (i == n - 1)) printf("\n");
     }
-    printf("\n");
 }
 
-void neumann(int n, int laps, int *res) {
-    for (int i = 0; i < laps; i++) {
+void neumann(int n, int laps, int *res)
+{
+    for (int i = 0; i < laps; i++)
+    {
         res[i] = n;
         n = ((n * n) / 100) % 10000;
     }
 }
 
-void diceThrow(int sides, int throws,
-               int *res) { // "sides" is length of res... let's consider that a coin is kinda like a 2-sided die
-    for (int i = 0; i < throws; i++) {
+// "sides" is length of res... let's consider that a coin is kinda like a 2-sided die
+void diceThrow(int sides, int throws, int *res)
+{
+    for (int i = 0; i < throws; i++)
+    {
         res[rand() % sides]++;
     }
 }
 
-int intRand() {
+int intRand()
+{
     seed = (seed * 5 + 1) % 16;
     return seed;
 }
 
-float floatRand() {
+float floatRand()
+{
     seed = (seed * 5 + 1) % 16;
     return (float) seed / 16;
 }
 
-void LCG(int a, int c, int m, int n, int *res) {
-    for (int i = 0; i < n; i++) {
+void LCG(int a, int c, int m, int n, int *res)
+{
+    for (int i = 0; i < n; i++)
+    {
         seed = (seed * a + c) % m;
         res[i] = seed;
     }
 }
 
-int main() {
+int main()
+{
     srand(time(NULL));
     int laps = 100;
     int *arr = mkArr(laps);
+    int i;
 
     printf("########### 1 ###########\n");
     neumann(1234, laps, arr); // converges towards 0, reaches it at i=56
@@ -128,9 +135,10 @@ int main() {
      */
 
     printf("########### 4 ###########\n");
-    int sides = 2;
+    int sides    = 2;
     int *coinArr = mkArr(sides);
-    for (int i = 10; i <= 1000; i *= 10) {
+    for (i = 10; i <= 1000; i *= 10)
+    {
         diceThrow(sides, i, coinArr);
         printArrMsg("coin flips", coinArr, sides);
         initArr(coinArr, sides);
@@ -141,7 +149,8 @@ int main() {
     printf("########### 5 ###########\n");
     sides = 6;
     int *d6Arr = mkArr(sides);
-    for (int i = 10; i <= 1000; i *= 10) {
+    for (i = 10; i <= 1000; i *= 10)
+    {
         diceThrow(sides, i, d6Arr);
         printArrMsg("d6 throws", d6Arr, sides);
         initArr(d6Arr, sides);
@@ -149,7 +158,8 @@ int main() {
 
     sides = 10;
     int *d10Arr = mkArr(sides);
-    for (int i = 10; i <= 1000; i *= 10) {
+    for (i = 10; i <= 1000; i *= 10)
+    {
         diceThrow(sides, i, d10Arr);
         printArrMsg("d10 throws", d10Arr, sides);
         initArr(d10Arr, sides);
@@ -159,15 +169,18 @@ int main() {
 
     printf("########### 6 ###########\n");
     int n = 32;
-    arr = mkArr(n);
-    for (int i = 0; i < n; i++) {
+
+    arr    = mkArr(n);
+    for (i = 0; i < n; i++)
+    {
         arr[i] = intRand();
     }
     printArrMsg("'x_i + 1 = (5 * x_i + 1) mod 16'", arr, n);
 
     printf("########### 7 ###########\n");
     float *arr_f = mkArr_f(n);
-    for (int i = 0; i < n; i++) {
+    for (i = 0; i < n; i++)
+    {
         arr_f[i] = floatRand();
     }
     printArrMsg_f("'x_i + 1 = ((5 * x_i + 1) mod 16) / 16'", arr_f, n);
@@ -214,13 +227,14 @@ int main() {
     printf("########### EXTRA ###########\n");
 
     // inspired by https://en.wikipedia.org/wiki/Linear-feedback_shift_register
-    uint8_t first = 6;
+    uint8_t first   = 6;
     uint8_t current = first;
     uint8_t bit;
 
-    do {
+    do
+    {
         printf(BYTE_TO_BINARY_PATTERN"-->", BYTE_TO_BINARY(current));
-        bit = (current ^ (current >> 1)) & 1u;
+        bit     = (current ^ (current >> 1)) & 1u;
         /*
          *               0 1 1 0
          *                      -xor-> 0 1 0 1
