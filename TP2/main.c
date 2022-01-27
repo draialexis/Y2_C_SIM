@@ -175,6 +175,11 @@ double genrand_res53(void) {
 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Created by draia on 27/01/2022.
+//
+
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -265,14 +270,11 @@ double *mkArr(int n) {
  * @param n size of said array
  */
 void printArrMsg(char *msg, double *arr, int n) {
-    printf("%s: ", msg);
+    printf("%s\n", msg);
     for (int i = 0; i < n; i++) {
-        printf("%f", arr[i]);
-        if (i == n - 1) printf("\n");
-        else printf(", ");
-
+        printf("%10f ", arr[i]);
+        if ((i % 5 == 4) || (i == n - 1)) printf("\n");
     }
-    printf("\n");
 }
 
 int main(void) {
@@ -299,17 +301,6 @@ int main(void) {
     double *arr3_1M = mkArr(size3);
     abc_rep(probs3, arr3_1M, size3, 1000000);
     printArrMsg("arr3_1M", arr3_1M, size3);
-
-    /*printf("1000 outputs of genrand_int32()\n");
-    for (i = 0; i < 1000; i++) {
-        printf("%10lu ", genrand_int32());
-        if (i % 5 == 4) printf("\n");
-    }
-    printf("\n1000 outputs of genrand_real2()\n");
-    for (i = 0; i < 1000; i++) {
-        printf("%10.8f ", genrand_real2());
-        if (i % 5 == 4) printf("\n");
-    }*/
 
     return 0;
 }

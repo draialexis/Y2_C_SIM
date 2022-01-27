@@ -1,3 +1,7 @@
+//
+// Created by draia on 20/01/2022.
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -218,7 +222,7 @@ int main() {
         printf(BYTE_TO_BINARY_PATTERN"-->", BYTE_TO_BINARY(current));
         bit = (current ^ (current >> 1)) & 1u;
         /*
-         * 0 1 1 0
+         *               0 1 1 0
          *                      -xor-> 0 1 0 1
          * 0 1 1 0 -r1-> 0 0 1 1
          */
