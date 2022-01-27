@@ -228,53 +228,6 @@ void initArr(double *arr, int n)
 }
 
 /**
- * abc_rep
- * populates a given array with a probability distribution
- * @param probs an array of probabilities represented as reals in [0...1]
- * @param arr the array to be populated, after having been initialized to 0.0 s
- * @param size size of said arrays
- * @param reps number of repetitions (i.e. sample size)
- */
-void abc_rep(const double *probs, double *arr, int size, int reps)
-{
-    int    i, j;
-    double rdm, cuml = 0.0;
-
-    for (i = 0; i < size; i++) cuml += probs[i];
-
-    if (fabs(cuml) - 1 > EPSILON)
-    {
-        printf("abc_rep: total of probabilities only amount to %f, expected 1.0\n", cuml);
-        exit(EXIT_FAILURE);
-    }
-
-    initArr(arr, size);
-
-    for (i = 0; i < reps; i++)
-    {
-        cuml = 0;
-        rdm  = genrand_real1();
-        if (rdm < 0.0 || rdm > 1.0)
-        {
-            printf("abc_rep: genrand_real1() < 0 || > 1 ?..\n");
-            exit(EXIT_FAILURE);
-        } else
-        {
-            for (j = 0; j < size; j++)
-            {
-                cuml += probs[j];
-                if (rdm <= cuml)
-                {
-                    arr[j] += 1;
-                    break;
-                }
-            }
-        }
-    }
-    for (i = 0; i < size; i++) arr[i] /= reps;
-}
-
-/**
  * mkArr
  * creates an array of doubles
  * @param n size of said array
@@ -293,14 +246,25 @@ double *mkArr(int n)
     return res;
 }
 
+double *cpArr(double *orig, int n)
+{
+    double *copy = mkArr(n);
+
+    for (int i = 0; i < n; i++)
+    {
+        copy[i] = orig[i];
+    }
+    return copy;
+}
+
 /**
- * printArrMsg
+ * printArrMsg_f
  * prints to console a given string, followed by the contents of an array of doubles
  * @param msg said string
  * @param arr said array
  * @param n size of said array
  */
-void printArrMsg(char *msg, double *arr, int n)
+void printArrMsg_f(char *msg, double *arr, int n)
 {
     printf("%s\n", msg);
     for (int i = 0; i < n; i++)
@@ -310,15 +274,130 @@ void printArrMsg(char *msg, double *arr, int n)
     }
 }
 
+/**
+ * printArrMsg
+ * prints to console a given string, followed by the contents of an array of ints
+ * @param msg said string
+ * @param arr said array
+ * @param n size of said array
+ */
+void printArrMsg(char *msg, int *arr, int n)
+{
+    printf("%s\n", msg);
+    for (int i = 0; i < n; i++)
+    {
+        printf("%d ", arr[i]);
+        if ((i % 5 == 4) || (i == n - 1)) printf("\n");
+    }
+}
+
+/**
+ * ded_old (discrete empirical distribution)
+ * populates a given array with a probability distribution
+ * @param probs an array of distinct probabilities represented as reals in [0...1], whose cumulative sum is 1.0
+ * @param arr the array to be populated, after having been initialized to 0.0 s
+ * @param n size of said arrays, strictly positive
+ * @param pop sample size, strictly positive
+ */
+void ded_old(const double *probs, double *arr, int n, int pop)
+{
+    int    i, j;
+    double cuml = 0.0;
+    for (i = 0; i < n; i++) cuml += probs[i];
+
+    if ((fabs(fabs(cuml) - 1) > EPSILON) || (n <= 0) || (pop <= 0) || (arr == NULL))
+    {
+        printf("ded: cumulated probabilities must amount to 1.0 (found %f)\n"
+               "n and pop must be strictly positive (n=%d, pop=%d)\n"
+               "arr must not be NULL\n", cuml, n, pop);
+        if (n > 0) printArrMsg_f("ded: arr:", arr, n);
+        exit(EXIT_FAILURE);
+    }
+
+    initArr(arr, n);
+    double rdm;
+
+    // simulating each item of sample, while resetting cumulative sum to 0
+    for (i = 0; i < pop; i++)
+    {
+        cuml = 0;
+        rdm  = genrand_real1();
+        {
+            // putting away each item of sample in our array
+            for (j = 0; j < n; j++)
+            {
+                cuml += probs[j];
+                if (rdm < cuml)
+                {
+                    arr[j] += 1;
+                    break;
+                }
+            }
+        }
+    }
+    // presenting the results as percentages
+    for (i = 0; i < n; i++) arr[i] *= 100.0 / pop;
+}
+
+/**
+ * ded (discrete empirical distribution)
+ * finds the cumulative distribution function from basic observation data
+ * @param n size of observation data array, strictly positive
+ * @param obs said array, of ints, non null
+ * @return an array of doubles, CDF
+ */
+double *ded(int n, int *obs)
+{
+    if ((n < 1) || (obs == NULL))
+    {
+        printf("ded: please provide a non-null array, and a strictly positive size for it\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int    i, j;
+    int    ttl  = 0;
+    double *pdf = mkArr(n);
+
+    // finding sample size
+    for (i = 0; i < n; i++)
+    {
+        ttl += obs[i];
+    }
+
+    // 3.b.a producing probability distribution function
+    for (i = 0; i < n; i++)
+    {
+        pdf[i] = (double) obs[i] / ttl;
+    }
+
+    int    sum  = 0;
+    double *cdf = mkArr(n);
+
+    // 3.b.b producing cumulative distribution function
+    for (i = 0; i < n; i++)
+    {
+
+        for (j = 0; j <= i; j++)
+        {
+            sum += obs[j];
+        }
+        cdf[i] = (double) sum / ttl;
+        sum = 0;
+    }
+
+    return cdf;
+}
+
 int main(void)
 {
-    int           i;
+    int           i, j, k;
     unsigned long init[4] = {0x123, 0x234, 0x345, 0x456};
     int           length  = 4;
 
     init_by_array(init, length);
 
     printf("########### 2 ###########\n");
+
     printf("1000 outputs of uniform()\n");
     for (i = 0; i < 1000; i++)
     {
@@ -327,17 +406,61 @@ int main(void)
     }
 
     printf("########### 3 ###########\n");
-    int    size3     = 3;
-    double probs3[3] = {0.5, 0.1, 0.4};
-    double *arr3_1k  = mkArr(size3);
+    printf("##### 3.a #####\n");
 
-    abc_rep(probs3, arr3_1k, size3, 1000);
-    printArrMsg("arr3_1k", arr3_1k, size3);
+    int    a, b, c;
+    double rand3a;
+    printf("expecting around: A = 50 pct; B = 10 pct; C = 40 pct\n");
+    for (i = 1000; i <= 1000000; i *= 1000)
+    {
+        a = b = c = 0;
+        printf("sample size = %d\n", i);
+        for (j = 0; j < i; j++)
+        {
+            rand3a = genrand_real1();
+            if (rand3a < 0.5) a++;
+            else if (rand3a < 0.6) b++;
+            else c++;
+        }
+        printf("individuals in class A = %10f pct\n", ((double) a / i) * 100.0);
+        printf("individuals in class B = %10f pct\n", ((double) b / i) * 100.0);
+        printf("individuals in class C = %10f pct\n", ((double) c / i) * 100.0);
+    }
 
-    double *arr3_1M = mkArr(size3);
-
-    abc_rep(probs3, arr3_1M, size3, 1000000);
-    printArrMsg("arr3_1M", arr3_1M, size3);
-
+    printf("##### 3.b #####\n");
+    int    obs3b[] = {100, 400, 600, 400, 100, 200};
+    double *cdf3b  = ded(6, obs3b);
+    double rand3b, cuml3b;
+    double *res    = mkArr(6);
+    printArrMsg_f("CDF:", cdf3b, 6);
+    for (i = 1000; i <= 1000000; i *= 1000)
+    {
+        // simulating each item of sample, while resetting cumulative sum to 0
+        for (j = 0; j < i; j++)
+        {
+            cuml3b = 0;
+            rand3b = genrand_real1();
+            {
+                // putting away each item of sample in our array
+                for (k = 0; k < 6; k++)
+                {
+                    cuml3b += cdf3b[k];
+                    if (rand3b < cuml3b)
+                    {
+                        res[k] += 1;
+                        break;
+                    }
+                }
+            }
+        }
+        // presenting the results as percentages
+//        for (j = 0; j < 6; j++)
+        {
+//            printf("res[%d] = %5f * 100.0 / %d = ", j, res[j], i);
+//            res[j] = (double) res[j] * 100.0 / i;
+//            printf("%10f\n", res[j]);
+        }
+        printArrMsg_f("DED:", res, 6);
+    }
     return 0;
 }
