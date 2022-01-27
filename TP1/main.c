@@ -1,7 +1,3 @@
-//
-// Created by aldrai on 20/01/2022.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -43,7 +39,7 @@ float *mkArr_f(int n) {
     return res;
 }
 
-void printArr(char *msg, int *arr, int n) {
+void printArrMsg(char *msg, int *arr, int n) {
     printf("%s: ", msg);
     for (int i = 0; i < n; i++) {
         printf("%d", arr[i]);
@@ -56,7 +52,7 @@ void printArr(char *msg, int *arr, int n) {
     printf("\n");
 }
 
-void printArr_f(char *msg, float *arr, int n) {
+void printArrMsg_f(char *msg, float *arr, int n) {
     printf("%s: ", msg);
     for (int i = 0; i < n; i++) {
         printf("%f", arr[i]);
@@ -107,17 +103,17 @@ int main() {
 
     printf("########### 1 ###########\n");
     neumann(1234, laps, arr); // converges towards 0, reaches it at i=56
-    printArr("seed 1234", arr, laps);
+    printArrMsg("seed 1234", arr, laps);
 
     printf("########### 2 ###########\n");
     neumann(4100, laps, arr); // is stuck in a short period at i%4==0 (4100, 8100, 6100, 2100, ...)
-    printArr("seed 4100", arr, laps);
+    printArrMsg("seed 4100", arr, laps);
     neumann(1324, laps, arr); // reaches 4100 at i=92, and then gets stuck in the above-mentioned period
-    printArr("seed 1324", arr, laps);
+    printArrMsg("seed 1324", arr, laps);
     neumann(1301, laps, arr); // reaches 6100 at i=10, and then gets stuck in the above-mentioned period
-    printArr("seed 1301", arr, laps);
+    printArrMsg("seed 1301", arr, laps);
     neumann(3141, laps, arr); // reaches 100 at i=7 and just stays there (_100_ * 100 / 100 % 10000 = _100_)
-    printArr("seed 3141", arr, laps);
+    printArrMsg("seed 3141", arr, laps);
 
     printf("########### 3 ###########\n");
     /* 
@@ -132,7 +128,7 @@ int main() {
     int *coinArr = mkArr(sides);
     for (int i = 10; i <= 1000; i *= 10) {
         diceThrow(sides, i, coinArr);
-        printArr("coin flips", coinArr, sides);
+        printArrMsg("coin flips", coinArr, sides);
         initArr(coinArr, sides);
     }
 
@@ -143,7 +139,7 @@ int main() {
     int *d6Arr = mkArr(sides);
     for (int i = 10; i <= 1000; i *= 10) {
         diceThrow(sides, i, d6Arr);
-        printArr("d6 throws", d6Arr, sides);
+        printArrMsg("d6 throws", d6Arr, sides);
         initArr(d6Arr, sides);
     }
 
@@ -151,11 +147,11 @@ int main() {
     int *d10Arr = mkArr(sides);
     for (int i = 10; i <= 1000; i *= 10) {
         diceThrow(sides, i, d10Arr);
-        printArr("d10 throws", d10Arr, sides);
+        printArrMsg("d10 throws", d10Arr, sides);
         initArr(d10Arr, sides);
     }
     diceThrow(sides, 1000000, d10Arr);
-    printArr("d10 throws", d10Arr, sides);
+    printArrMsg("d10 throws", d10Arr, sides);
 
     printf("########### 6 ###########\n");
     int n = 32;
@@ -163,19 +159,19 @@ int main() {
     for (int i = 0; i < n; i++) {
         arr[i] = intRand();
     }
-    printArr("'x_i + 1 = (5 * x_i + 1) mod 16'", arr, n);
+    printArrMsg("'x_i + 1 = (5 * x_i + 1) mod 16'", arr, n);
 
     printf("########### 7 ###########\n");
     float *arr_f = mkArr_f(n);
     for (int i = 0; i < n; i++) {
         arr_f[i] = floatRand();
     }
-    printArr_f("'x_i + 1 = ((5 * x_i + 1) mod 16) / 16'", arr_f, n);
+    printArrMsg_f("'x_i + 1 = ((5 * x_i + 1) mod 16) / 16'", arr_f, n);
 
     printf("########### 8 ###########\n");
     initArr(arr, n);
     LCG(3, 6, 81, n, arr);
-    printArr("'x_i + 1 = (3 * x_i + 6) mod 81'", arr, n);
+    printArrMsg("'x_i + 1 = (3 * x_i + 6) mod 81'", arr, n);
     // a=3, c=6, m=81 converges to 78 at i=4
     initArr(arr, n);
     LCG(2, 4, 14, n, arr);

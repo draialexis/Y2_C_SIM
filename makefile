@@ -2,7 +2,7 @@ CC=gcc
 
 CFLAGS=-c -Wall
 LDFLAGS=
-SOURCES=matsumoto/mt19937ar.c TP2/main.c
+SOURCES=TP2/main.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=prog
 
