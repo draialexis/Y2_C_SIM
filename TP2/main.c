@@ -155,12 +155,6 @@ unsigned long genrand_int32(void)
     return y;
 }
 
-/* generates a random number on [0,0x7fffffff]-interval */
-long genrand_int31(void)
-{
-    return (long) (genrand_int32() >> 1);
-}
-
 /* generates a random number on [0,1]-real-interval */
 double genrand_real1(void)
 {
@@ -180,13 +174,6 @@ double genrand_real3(void)
 {
     return (((double) genrand_int32()) + 0.5) * (1.0 / 4294967296.0);
     /* divided by 2^32 */
-}
-
-/* generates a random number on [0,1) with 53-bit resolution*/
-double genrand_res53(void)
-{
-    unsigned long a = genrand_int32() >> 5, b = genrand_int32() >> 6;
-    return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
 }
 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
@@ -263,30 +250,13 @@ void printArrMsg_f(char *msg, double *arr, int n)
 }
 
 /**
- * printArrMsg
- * prints to console a given string, followed by the contents of an array of ints
- * @param msg said string
- * @param arr said array
- * @param n size of said array
- */
-void printArrMsg(char *msg, int *arr, int n)
-{
-    printf("%s\n", msg);
-    for (int i = 0; i < n; i++)
-    {
-        printf("%d ", arr[i]);
-        if ((i % 5 == 4) || (i == n - 1)) printf("\n");
-    }
-}
-
-/**
  * cdf
  * finds the cumulative distribution function from basic observation data
  * @param n size of observation data array, strictly positive
  * @param obs said array, of ints, non null
  * @return an array of doubles, CDF
  */
-double *cdf(int n, int *obs)
+double *cdf(int n, const int *obs)
 {
     if ((n < 1) || (obs == NULL))
     {
@@ -456,7 +426,7 @@ int main(void)
     int    obs3b[] = {100, 400, 600, 400, 100, 200};
     double *cdf3b  = cdf(6, obs3b);
     double rand3b;
-    double *res3 = mkArr(6);
+    double *res3   = mkArr(6);
     initArr(res3, 6);
     printArrMsg_f("CDF:", cdf3b, 6);
     for (i = 1000; i <= 1000000; i *= 1000)
