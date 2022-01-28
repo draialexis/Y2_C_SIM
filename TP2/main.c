@@ -373,6 +373,14 @@ double rejection(int xMax, int xMin, int size, double (*pdf)(double))
     }
 }
 
+/**
+ * boxMuller
+ * procedure to generate two random numbers uniformly distributed around a given mean according to a given sigma
+ * @param x1 pointer to a double, will house first random number
+ * @param x2 pointer to a double, will house second random number
+ * @param mean said mean
+ * @param sigma said sigma (standard deviation)
+ */
 void boxMuller(double *x1, double *x2, double mean, double sigma)
 {
     //with some help from https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
@@ -487,7 +495,8 @@ int main(void)
 
     printf("########### 5 & EXTRA ###########\n");
 
-    int    many  = 50000, throws = 20;
+    // the 'many' variable below can be increased, but the relevant functions get really slow (10sec+) in the 10^6 range
+    int    many  = 100000, throws = 20;
     double mean4 = 0, sigma4 = 0;
     printf
             (
@@ -577,6 +586,24 @@ int main(void)
         printf("in [%d, %d[: %d\n", j, j + 1, testBins5[j]);
     }
     printf("(see report for scatter plots of these tests)\n");
+
+    printf("########### 6 ###########\n");
+    printf("(see comments or report)\n");
+    /*
+     * C/C++ libs
+     * uniform:             https://people.sc.fsu.edu/~jburkardt/c_src/uniform/uniform.html
+     * discrete empirical:  https://www.nsnam.org/doxygen/classns3_1_1_empirical_random_variable.html
+     * continuous:          https://people.sc.fsu.edu/~jburkardt/c_src/ranlib/ranlib.html
+     * normal:              https://people.sc.fsu.edu/~jburkardt/c_src/normal/normal.html ;
+     *                      https://people.sc.fsu.edu/~jburkardt/c_src/ziggurat/ziggurat.html
+     * Java libs
+     * uniform:             https://commons.apache.org/proper/commons-math/javadocs/api-3.5/org/apache/commons/math3/distribution/UniformRealDistribution.html
+     * discrete empirical:  https://commons.apache.org/proper/commons-math/javadocs/api-3.5/org/apache/commons/math3/random/class-use/RandomGenerator.html
+     * continuous:          https://commons.apache.org/proper/commons-math/javadocs/api-3.4/org/apache/commons/math3/distribution/ExponentialDistribution.html ;
+     *                      etc.
+     * normal:              https://commons.apache.org/proper/commons-math/javadocs/api-3.6/org/apache/commons/math3/distribution/NormalDistribution.html
+     *
+     */
 
     return 0;
 }
