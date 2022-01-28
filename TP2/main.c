@@ -369,6 +369,7 @@ double *ded(int n, int *obs)
     {
         pdf[i] = (double) obs[i] / ttl;
     }
+    printArrMsg_f("PDF:", pdf, 6);
 
     int    sum  = 0;
     double *cdf = mkArr(n);
@@ -430,22 +431,21 @@ int main(void)
     printf("##### 3.b #####\n");
     int    obs3b[] = {100, 400, 600, 400, 100, 200};
     double *cdf3b  = ded(6, obs3b);
-    double rand3b, cuml3b;
+    double rand3b;
     double *res    = mkArr(6);
+    initArr(res, 6);
     printArrMsg_f("CDF:", cdf3b, 6);
     for (i = 1000; i <= 1000000; i *= 1000)
     {
         // simulating each item of sample, while resetting cumulative sum to 0
         for (j = 0; j < i; j++)
         {
-            cuml3b = 0;
             rand3b = genrand_real1();
             {
                 // putting away each item of sample in our array
                 for (k = 0; k < 6; k++)
                 {
-                    cuml3b += cdf3b[k];
-                    if (rand3b < cuml3b)
+                    if (rand3b < cdf3b[k])
                     {
                         res[k] += 1;
                         break;
@@ -454,13 +454,14 @@ int main(void)
             }
         }
         // presenting the results as percentages
-//        for (j = 0; j < 6; j++)
+        for (j = 0; j < 6; j++)
         {
 //            printf("res[%d] = %5f * 100.0 / %d = ", j, res[j], i);
-//            res[j] = (double) res[j] * 100.0 / i;
+            res[j] = (double) res[j] * 100.0 / i;
 //            printf("%10f\n", res[j]);
         }
-        printArrMsg_f("DED:", res, 6);
+        printf("i = %d\n", i);
+        printArrMsg_f("DED_%:", res, 6);
     }
     return 0;
 }
