@@ -389,6 +389,17 @@ double *cdf(int n, int *obs)
     return cdf;
 }
 
+/**
+ * negExp
+ * implements the negative exponential function: an exponential continuous distribution
+ * @param m a desired mean
+ * @return result of the formula: -m * ln(1 - rdm)
+ */
+double negExp(double m)
+{
+    return (-m * log(1 - genrand_real1()));
+}
+
 int main(void)
 {
     int           i, j, k;
@@ -455,8 +466,45 @@ int main(void)
         }
         // presenting the results as percentages
         for (j = 0; j < 6; j++) res[j] = (double) res[j] * 100.0 / i;
-        printf("sample = %d: ", i);
+        printf("sample size = %d: ", i);
         printArrMsg_f("DED_%:", res, 6);
     }
+
+    printf("########### 4 ###########\n");
+
+    double cuml4;
+    printf("expecting around: average = 10.0\n");
+    for (i = 1000; i <= 1000000; i *= 1000)
+    {
+        cuml4 = 0;
+
+        for (j = 0; j < i; j++)
+        {
+            cuml4 += negExp(10.0);
+        }
+        printf("sample size = %d: average = %10f\n", i, cuml4 / i);
+    }
+
+    int testBins[21] = {0};
+    int negExpRet;
+    for (i = 1000; i <= 1000000; i *= 1000)
+    {
+        printf("test bins, sample size = %d\n", i);
+        for (j = 0; j < i; j++)
+        {
+            negExpRet = (int) negExp(10.0);
+            if (negExpRet < 20) testBins[negExpRet] += 1;
+            else testBins[20] += 1;
+        }
+        for (j = 0; j < 21; j++)
+        {
+            printf("in box %d: %d\n", j, testBins[j]);
+        }
+    }
+    printf("see report for scatter plots of these tests\n");
+
+    printf("########### 5 ###########\n");
+
+
     return 0;
 }
