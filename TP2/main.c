@@ -624,7 +624,6 @@ int main(void)
      * continuous:          https://commons.apache.org/proper/commons-math/javadocs/api-3.4/org/apache/commons/math3/distribution/ExponentialDistribution.html ;
      *                      etc.
      * normal:              https://commons.apache.org/proper/commons-math/javadocs/api-3.6/org/apache/commons/math3/distribution/NormalDistribution.html
-     *
      */
 
     return 0;
