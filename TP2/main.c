@@ -307,10 +307,10 @@ void ded_old(const double *probs, double *arr, int n, int pop)
 
     if ((fabs(fabs(cuml) - 1) > EPSILON) || (n <= 0) || (pop <= 0) || (arr == NULL))
     {
-        printf("ded: cumulated probabilities must amount to 1.0 (found %f)\n"
+        printf("cdf: cumulated probabilities must amount to 1.0 (found %f)\n"
                "n and pop must be strictly positive (n=%d, pop=%d)\n"
                "arr must not be NULL\n", cuml, n, pop);
-        if (n > 0) printArrMsg_f("ded: arr:", arr, n);
+        if (n > 0) printArrMsg_f("cdf: arr:", arr, n);
         exit(EXIT_FAILURE);
     }
 
@@ -340,17 +340,17 @@ void ded_old(const double *probs, double *arr, int n, int pop)
 }
 
 /**
- * ded (discrete empirical distribution)
+ * cdf
  * finds the cumulative distribution function from basic observation data
  * @param n size of observation data array, strictly positive
  * @param obs said array, of ints, non null
  * @return an array of doubles, CDF
  */
-double *ded(int n, int *obs)
+double *cdf(int n, int *obs)
 {
     if ((n < 1) || (obs == NULL))
     {
-        printf("ded: please provide a non-null array, and a strictly positive size for it\n");
+        printf("cdf: please provide a non-null array, and a strictly positive size for it\n");
         exit(EXIT_FAILURE);
     }
 
@@ -430,7 +430,7 @@ int main(void)
 
     printf("##### 3.b #####\n");
     int    obs3b[] = {100, 400, 600, 400, 100, 200};
-    double *cdf3b  = ded(6, obs3b);
+    double *cdf3b  = cdf(6, obs3b);
     double rand3b;
     double *res    = mkArr(6);
     initArr(res, 6);
@@ -454,13 +454,8 @@ int main(void)
             }
         }
         // presenting the results as percentages
-        for (j = 0; j < 6; j++)
-        {
-//            printf("res[%d] = %5f * 100.0 / %d = ", j, res[j], i);
-            res[j] = (double) res[j] * 100.0 / i;
-//            printf("%10f\n", res[j]);
-        }
-        printf("i = %d\n", i);
+        for (j = 0; j < 6; j++) res[j] = (double) res[j] * 100.0 / i;
+        printf("sample = %d: ", i);
         printArrMsg_f("DED_%:", res, 6);
     }
     return 0;
