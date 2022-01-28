@@ -61,7 +61,7 @@ void printArrMsg_f(char *msg, double *arr, int n)
     printf("%s\n", msg);
     for (int i = 0; i < n; i++)
     {
-        printf("%10f ", arr[i]);
+        printf("%10.8f ", arr[i]);
         if ((i % 5 == 4) || (i == n - 1)) printf("\n");
     }
 }

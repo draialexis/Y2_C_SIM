@@ -257,7 +257,7 @@ void printArrMsg_f(char *msg, double *arr, int n)
     printf("%s\n", msg);
     for (int i = 0; i < n; i++)
     {
-        printf("%10f ", arr[i]);
+        printf("%10.8f ", arr[i]);
         if ((i % 5 == 4) || (i == n - 1)) printf("\n");
     }
 }
@@ -399,14 +399,36 @@ int main(void)
     int           length  = 4;
 
     init_by_array(init, length);
-    printf("########### 2 ###########\n");
 
-    printf("1000 outputs of uniform()\n");
+    printf("########### 1 ###########\n");
+
+    printf("1000 outputs of genrand_int32()\n");
     for (i = 0; i < 1000; i++)
     {
-        printf("%10f ", uniform(-89.2, 56.7));
+        printf("%10lu ", genrand_int32());
         if (i % 5 == 4) printf("\n");
     }
+    printf("\n1000 outputs of genrand_real2()\n");
+    for (i = 0; i < 1000; i++)
+    {
+        printf("%10.8f ", genrand_real2());
+        if (i % 5 == 4) printf("\n");
+    }
+    // make sure that it checks out compared to ../matsumoto/mt19937ar.out
+
+    printf("########### 2 ###########\n");
+
+    printf("1000 outputs of uniform(); expected mean = -16.25\n");
+    double mean2 = 0, uniformRet;
+    for (i = 0; i < 1000; i++)
+    {
+        uniformRet = uniform(-89.2, 56.7);
+        mean2 += uniformRet;
+        printf("%10.8f ", uniformRet);
+        if (i % 5 == 4) printf("\n");
+    }
+    mean2 /= 1000;
+    printf("approximate mean with uniform(): %10.8f\n", mean2);
 
     printf("########### 3 ###########\n");
     printf("##### 3.a #####\n");
@@ -434,8 +456,8 @@ int main(void)
     int    obs3b[] = {100, 400, 600, 400, 100, 200};
     double *cdf3b  = cdf(6, obs3b);
     double rand3b;
-    double *res    = mkArr(6);
-    initArr(res, 6);
+    double *res3 = mkArr(6);
+    initArr(res3, 6);
     printArrMsg_f("CDF:", cdf3b, 6);
     for (i = 1000; i <= 1000000; i *= 1000)
     {
@@ -449,16 +471,16 @@ int main(void)
                 {
                     if (rand3b < cdf3b[k])
                     {
-                        res[k] += 1;
+                        res3[k] += 1;
                         break;
                     }
                 }
             }
         }
         // presenting the results as percentages
-        for (j = 0; j < 6; j++) res[j] = (double) res[j] * 100.0 / i;
+        for (j = 0; j < 6; j++) res3[j] = (double) res3[j] * 100.0 / i;
         printf("sample size = %d: ", i);
-        printArrMsg_f("DED_%:", res, 6);
+        printArrMsg_f("DED_%:", res3, 6);
     }
     printf("########### 4 ###########\n");
 
