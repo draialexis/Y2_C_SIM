@@ -195,11 +195,10 @@ double genrand_res53(void)
 // Created by draia on 27/01/2022.
 //
 
-
-#include <stdlib.h>
 #include <math.h>
 
-#define EPSILON 0.00000000000000022204460492503131
+// let me have this!
+#define TAU (2*M_PI)
 
 /**
  * uniform
@@ -246,17 +245,6 @@ double *mkArr(int n)
     return res;
 }
 
-double *cpArr(double *orig, int n)
-{
-    double *copy = mkArr(n);
-
-    for (int i = 0; i < n; i++)
-    {
-        copy[i] = orig[i];
-    }
-    return copy;
-}
-
 /**
  * printArrMsg_f
  * prints to console a given string, followed by the contents of an array of doubles
@@ -289,54 +277,6 @@ void printArrMsg(char *msg, int *arr, int n)
         printf("%d ", arr[i]);
         if ((i % 5 == 4) || (i == n - 1)) printf("\n");
     }
-}
-
-/**
- * ded_old (discrete empirical distribution)
- * populates a given array with a probability distribution
- * @param probs an array of distinct probabilities represented as reals in [0...1], whose cumulative sum is 1.0
- * @param arr the array to be populated, after having been initialized to 0.0 s
- * @param n size of said arrays, strictly positive
- * @param pop sample size, strictly positive
- */
-void ded_old(const double *probs, double *arr, int n, int pop)
-{
-    int    i, j;
-    double cuml = 0.0;
-    for (i = 0; i < n; i++) cuml += probs[i];
-
-    if ((fabs(fabs(cuml) - 1) > EPSILON) || (n <= 0) || (pop <= 0) || (arr == NULL))
-    {
-        printf("cdf: cumulated probabilities must amount to 1.0 (found %f)\n"
-               "n and pop must be strictly positive (n=%d, pop=%d)\n"
-               "arr must not be NULL\n", cuml, n, pop);
-        if (n > 0) printArrMsg_f("cdf: arr:", arr, n);
-        exit(EXIT_FAILURE);
-    }
-
-    initArr(arr, n);
-    double rdm;
-
-    // simulating each item of sample, while resetting cumulative sum to 0
-    for (i = 0; i < pop; i++)
-    {
-        cuml = 0;
-        rdm  = genrand_real1();
-        {
-            // putting away each item of sample in our array
-            for (j = 0; j < n; j++)
-            {
-                cuml += probs[j];
-                if (rdm < cuml)
-                {
-                    arr[j] += 1;
-                    break;
-                }
-            }
-        }
-    }
-    // presenting the results as percentages
-    for (i = 0; i < n; i++) arr[i] *= 100.0 / pop;
 }
 
 /**
@@ -393,11 +333,55 @@ double *cdf(int n, int *obs)
  * negExp
  * implements the negative exponential function: an exponential continuous distribution
  * @param m a desired mean
- * @return result of the formula: -m * ln(1 - rdm)
+ * @return result of the formula: -m * ln(1 - rdm) (rdm being a double in [0, 1[ so as not to ask ln(0))
  */
 double negExp(double m)
 {
-    return (-m * log(1 - genrand_real1()));
+    return (-m * log(1 - genrand_real2()));
+}
+
+/**
+ * d6
+ * gives probability for x to be the outcome of a 6-sided-die throw
+ * @param x outcome tested for
+ * @return probability of said outcome, in [0, 1]
+ */
+double d6(double x)
+{
+    if ((x >= 1) && (x <= 6)) return (1.0 / 6);
+    else return 0.0;
+}
+
+/**
+ * rejection algorithm to generate a random number according to a PDF
+ * @param xMax upper bound of said random number
+ * @param xMin lower bound of said random number
+ * @param size sample size
+ * @param fun a PDF (probability distribution function)
+ * @return a random number according to a PDF
+ */
+double rejection(int xMax, int xMin, int size, double (*pdf)(double))
+{
+    double yMax = xMax * size;
+    while (1)
+    {
+        double xRdm = genrand_real1();
+        double yRdm = genrand_real1();
+        double x    = xMin + xRdm * (xMax - xMin);
+        double y    = yMax * yRdm;
+        if (y <= (*pdf)(x)) return x;
+    }
+}
+
+void boxMuller(double *x1, double *x2, double mean, double sigma)
+{
+    //with some help from https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+
+    double r1  = genrand_real3();
+    double r2  = genrand_real3();
+    double mag = sigma * sqrt((-2 * log(r1)));
+    *x1 = mag * cos(TAU * r2) + mean;
+    *x2 = mag * sin(TAU * r2) + mean;
 }
 
 int main(void)
@@ -407,7 +391,6 @@ int main(void)
     int           length  = 4;
 
     init_by_array(init, length);
-
     printf("########### 2 ###########\n");
 
     printf("1000 outputs of uniform()\n");
@@ -469,7 +452,6 @@ int main(void)
         printf("sample size = %d: ", i);
         printArrMsg_f("DED_%:", res, 6);
     }
-
     printf("########### 4 ###########\n");
 
     double cuml4;
@@ -485,7 +467,7 @@ int main(void)
         printf("sample size = %d: average = %10f\n", i, cuml4 / i);
     }
 
-    int testBins[21] = {0};
+    int testBins4[21] = {0};
     int negExpRet;
     for (i = 1000; i <= 1000000; i *= 1000)
     {
@@ -493,18 +475,108 @@ int main(void)
         for (j = 0; j < i; j++)
         {
             negExpRet = (int) negExp(10.0);
-            if (negExpRet < 20) testBins[negExpRet] += 1;
-            else testBins[20] += 1;
+            if (negExpRet < 20) testBins4[negExpRet] += 1;
+            else testBins4[20] += 1;
         }
         for (j = 0; j < 21; j++)
         {
-            printf("in box %d: %d\n", j, testBins[j]);
+            printf("in box %d: %d\n", j, testBins4[j]);
         }
     }
-    printf("see report for scatter plots of these tests\n");
+    printf("(see report for scatter plots of these tests)\n");
 
-    printf("########### 5 ###########\n");
+    printf("########### 5 & EXTRA ###########\n");
 
+    int    many  = 50000, throws = 20;
+    double mean4 = 0, sigma4 = 0;
+    printf
+            (
+                    "rejection function with 20d6\n"
+                    "expecting around: mean = 3.5; sigma = %10f\n",
+                    sqrt(throws * (17.5 / 6))
+            );
+    printf("'many' = %d\n", many);
+
+    for (i = 0; i < many; i++) mean4 += rejection(6, 1, throws, &d6);
+
+    mean4 /= many;
+    printf("using our rejection function\napproximate mean for d6 throws: %10f\n", mean4);
+
+    //sum of squares of distances
+    for (i = 0; i < many; i++) sigma4 += pow((rejection(6, 1, throws, &d6) - mean4), 2);
+
+    sigma4 = sqrt((throws * sigma4) / many); //population standard deviation
+    printf("approximate population standard deviation for 20 d6 throws: %10f\n", sigma4);
+
+    printf("Box-Muller function:\n");
+    int    testBins5[20] = {0};
+    double x[2];
+    double mean5, sigma5;
+    for (i = 1000; i <= 1000000; i *= 1000)
+    {
+        mean5 = sigma5 = 0;
+        printf("expecting around: mean = 0; sigma = 1 (sample size = %d)\n", i);
+        for (j = 0; j < i; j++)
+        {
+            boxMuller(&x[0], &x[1], 0, 1);
+            for (k = 0; k < 2; k++) // checking both numbers from box&muller
+            {
+                mean5 += x[k];
+                if ((x[k] >= -1) && (x[k] <= 1))
+                {
+                    testBins5[(int) (x[k] * 10 + 10)] += 1; //[-1, 1] --> [0, 20]
+                }
+            }
+        }
+        mean5 /= 2 * i;
+        printf("approximate mean: %10f\n", mean5);
+        for (j = 0; j < i; j++)
+        {
+            boxMuller(&x[0], &x[1], 0, 1);
+            for (k = 0; k < 2; k++) // still checking both numbers from box&muller
+            {
+                sigma5 += pow((x[k] - mean5), 2);
+            }
+        }
+        sigma5 = sqrt(sigma5 / (2 * i));
+        printf("approximate standard deviation: %10f\n", sigma5);
+        for (j = 0; j < 20; j++)
+        {
+            printf("in [%f, %f[: %d\n", (j - 10.0) / 10, (j - 10.0) / 10 + 0.1, testBins5[j]);
+        }
+    }
+
+    printf("And now for mean = 10, sigma = 3 (sample size = 2000000)\n");
+    mean5  = sigma5 = 0;
+    for (i = 0; i < 1000000; i++)
+    {
+        boxMuller(&x[0], &x[1], 10, 3);
+        for (j = 0; j < 2; j++)
+        {
+            mean5 += x[j];
+            if ((x[j] >= 0) && (x[j] <= 20))
+            {
+                testBins5[(int) x[j]] += 1;
+            }
+        }
+    }
+    mean5 /= 2000000;
+    printf("approximate mean: %10f\n", mean5);
+    for (i = 0; i < 1000000; i++)
+    {
+        boxMuller(&x[0], &x[1], 10, 3);
+        for (j = 0; j < 2; j++)
+        {
+            sigma5 += pow((x[j] - mean5), 2);
+        }
+    }
+    sigma5 = sqrt(sigma5 / 2000000);
+    printf("approximate standard deviation: %10f\n", sigma5);
+    for (j = 0; j < 20; j++)
+    {
+        printf("in [%d, %d[: %d\n", j, j + 1, testBins5[j]);
+    }
+    printf("(see report for scatter plots of these tests)\n");
 
     return 0;
 }
