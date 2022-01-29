@@ -503,12 +503,12 @@ int main(void)
 
     // the 'many' variable below can be increased, but the relevant functions get really slow (10sec+) in the 10^6 range
     int    many  = 100000, throws = 20;
-    double mean4 = 0, sigma4 = 0;
+    double mean4 = 0, sigma4 = 0, rejectionRet;
     printf
             (
-                    "rejection function with 20d6\n"
+                    "sample size = %d: rejection function with 20d6\n"
                     "expecting around: mean = 3.5; sigma = %10f\n",
-                    sqrt(throws * (17.5 / 6))
+                    many, sqrt(17.5 / 6)
             );
     printf("'many' = %d\n", many);
 
@@ -516,7 +516,6 @@ int main(void)
     {
         mean4 += rejection(6, 1, throws, &d6);
     }
-
     mean4 /= many;
     printf("using our rejection function\napproximate mean for d6 throws: %10f\n", mean4);
 
@@ -526,12 +525,12 @@ int main(void)
         sigma4 += pow((rejection(6, 1, throws, &d6) - mean4), 2);
     }
 
-    sigma4 = sqrt((throws * sigma4) / many); //population standard deviation
-    printf("approximate population standard deviation for 20 d6 throws: %10f\n", sigma4);
+    sigma4 = sqrt((sigma4) / many); // standard deviation
+    printf("approximate standard deviation for d6 throws: %10f\n", sigma4);
 
     printf("Box-Muller function:\n");
     int    testBins5[20] = {0};
-    double x[2];
+    double x[2]; // preparing a 2-tuple for our boxMuller outcomes
     double mean5, sigma5, boundLow, boundHigh;
     for (i = 1000; i <= 1000000; i *= 1000)
     {
