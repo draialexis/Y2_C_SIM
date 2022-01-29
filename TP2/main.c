@@ -200,22 +200,8 @@ double uniform(double a, double b)
 }
 
 /**
- * initArr
- * initializes an array of doubles to 0.0 s
- * @param arr said array
- * @param n size of said array
- */
-void initArr(double *arr, int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        arr[i] = 0.0;
-    }
-}
-
-/**
  * mkArr
- * creates an array of doubles
+ * creates an array of doubles, initialized at 0.0 s
  * @param n size of said array
  * @return said array
  */
@@ -223,10 +209,10 @@ double *mkArr(int n)
 {
     double *res = NULL;
 
-    res = malloc(sizeof(double) * n);
+    res = calloc(n, sizeof(double));
     if (res == NULL)
     {
-        printf("MALLOC FAILURE");
+        printf("CALLOC FAILURE");
         exit(EXIT_FAILURE);
     }
     return res;
@@ -245,7 +231,10 @@ void printArrMsg_f(char *msg, double *arr, int n)
     for (int i = 0; i < n; i++)
     {
         printf("%10.8f ", arr[i]);
-        if ((i % 5 == 4) || (i == n - 1)) printf("\n");
+        if ((i % 5 == 4) || (i == n - 1))
+        {
+            printf("\n");
+        }
     }
 }
 
@@ -281,19 +270,15 @@ double *cdf(int n, const int *obs)
     }
     printArrMsg_f("PDF:", pdf, 6);
 
-    int    sum  = 0;
     double *cdf = mkArr(n);
 
     // 3.b.b producing cumulative distribution function
     for (i = 0; i < n; i++)
     {
-
         for (j = 0; j <= i; j++)
         {
-            sum += obs[j];
+            cdf[i] += pdf[j];
         }
-        cdf[i] = (double) sum / ttl;
-        sum = 0;
     }
 
     return cdf;
@@ -318,8 +303,13 @@ double negExp(double m)
  */
 double d6(double x)
 {
-    if ((x >= 1) && (x <= 6)) return (1.0 / 6);
-    else return 0.0;
+    if ((x >= 1) && (x <= 6))
+    {
+        return (1.0 / 6);
+    } else
+    {
+        return 0.0;
+    }
 }
 
 /**
@@ -339,7 +329,10 @@ double rejection(int xMax, int xMin, int size, double (*pdf)(double))
         double yRdm = genrand_real1();
         double x    = xMin + xRdm * (xMax - xMin);
         double y    = yMax * yRdm;
-        if (y <= (*pdf)(x)) return x;
+        if (y <= (*pdf)(x))
+        {
+            return x;
+        }
     }
 }
 
@@ -379,7 +372,7 @@ int main(void)
         if (i % 5 == 4) printf("\n");
     }
     printf("\n1000 outputs of genrand_real2()\n");
-    for (i = 0; i < 1000; i++)
+    for (i                   = 0; i < 1000; i++)
     {
         printf("%10.8f ", genrand_real2());
         if (i % 5 == 4) printf("\n");
@@ -388,18 +381,34 @@ int main(void)
 
     printf("########### 2 ###########\n");
 
-    printf("1000 outputs of uniform(); expected mean = -16.25\n");
-    double mean2 = 0, uniformRet;
-    for (i = 0; i < 1000; i++)
+    printf("after 1000000 outputs of uniform(); expected mean = -16.25\n");
+    double uniformRet, mean2 = 0;
+    int    idx, size2        = 1000000;
+    double testBins2[145]    = {0.0};
+    for (i = 0; i < size2; i++)
     {
         uniformRet = uniform(-89.2, 56.7);
-        mean2 += uniformRet;
-        printf("%10.8f ", uniformRet);
-        if (i % 5 == 4) printf("\n");
-    }
-    mean2 /= 1000;
-    printf("approximate mean with uniform(): %10.8f\n", mean2);
+        idx        = (int) uniformRet + 88;
 
+        mean2 += uniformRet;
+        // making sure not to conflate -0.x and +0.x
+        if (uniformRet < 0)
+        {
+            testBins2[idx] += 1;
+        } else
+        {
+            testBins2[idx + 1] += 1;
+        }
+    }
+    mean2 /= size2;
+    printf("approximate mean with uniform(): %10.8f\n", mean2);
+    // presenting the results as percentages
+    for (i = 0; i < 145; i++)
+    {
+        testBins2[i] = (double) testBins2[i] * 100.0 / size2;
+    }
+    printf("sample size = %d: ", i);
+    printArrMsg_f("uniform_%:", testBins2, 145);
     printf("########### 3 ###########\n");
     printf("##### 3.a #####\n");
 
@@ -417,40 +426,40 @@ int main(void)
             else if (rand3a < 0.6) b++;
             else c++;
         }
-        printf("individuals in class A = %10f pct\n", ((double) a / i) * 100.0);
-        printf("individuals in class B = %10f pct\n", ((double) b / i) * 100.0);
-        printf("individuals in class C = %10f pct\n", ((double) c / i) * 100.0);
+        printf("individuals in class A = %10f pct\n"
+               "individuals in class B = %10f pct\n"
+               "individuals in class C = %10f pct\n",
+               ((double) a / i) * 100.0, ((double) b / i) * 100.0, ((double) c / i) * 100.0);
     }
 
     printf("##### 3.b #####\n");
-    int    obs3b[] = {100, 400, 600, 400, 100, 200};
-    double *cdf3b  = cdf(6, obs3b);
+    int    obs3b[]      = {100, 400, 600, 400, 100, 200};
+    double *cdf3b       = cdf(6, obs3b);
     double rand3b;
-    double *res3   = mkArr(6);
-    initArr(res3, 6);
+    double testBins3[6] = {0.0};
     printArrMsg_f("CDF:", cdf3b, 6);
     for (i = 1000; i <= 1000000; i *= 1000)
     {
-        // simulating each item of sample, while resetting cumulative sum to 0
         for (j = 0; j < i; j++)
         {
             rand3b = genrand_real1();
             {
-                // putting away each item of sample in our array
                 for (k = 0; k < 6; k++)
                 {
                     if (rand3b < cdf3b[k])
                     {
-                        res3[k] += 1;
+                        testBins3[k] += 1;
                         break;
                     }
                 }
             }
         }
-        // presenting the results as percentages
-        for (j = 0; j < 6; j++) res3[j] = (double) res3[j] * 100.0 / i;
+        for (j = 0; j < 6; j++)
+        {
+            testBins3[j] = (double) testBins3[j] * 100.0 / i;
+        }
         printf("sample size = %d: ", i);
-        printArrMsg_f("DED_%:", res3, 6);
+        printArrMsg_f("DED_%:", testBins3, 6);
     }
     printf("########### 4 ###########\n");
 
@@ -475,8 +484,13 @@ int main(void)
         for (j = 0; j < i; j++)
         {
             negExpRet = (int) negExp(10.0);
-            if (negExpRet < 20) testBins4[negExpRet] += 1;
-            else testBins4[20] += 1;
+            if (negExpRet < 20)
+            {
+                testBins4[negExpRet] += 1;
+            } else
+            {
+                testBins4[20] += 1;
+            }
         }
         for (j = 0; j < 21; j++)
         {
@@ -498,13 +512,19 @@ int main(void)
             );
     printf("'many' = %d\n", many);
 
-    for (i = 0; i < many; i++) mean4 += rejection(6, 1, throws, &d6);
+    for (i = 0; i < many; i++)
+    {
+        mean4 += rejection(6, 1, throws, &d6);
+    }
 
     mean4 /= many;
     printf("using our rejection function\napproximate mean for d6 throws: %10f\n", mean4);
 
     //sum of squares of distances
-    for (i = 0; i < many; i++) sigma4 += pow((rejection(6, 1, throws, &d6) - mean4), 2);
+    for (i = 0; i < many; i++)
+    {
+        sigma4 += pow((rejection(6, 1, throws, &d6) - mean4), 2);
+    }
 
     sigma4 = sqrt((throws * sigma4) / many); //population standard deviation
     printf("approximate population standard deviation for 20 d6 throws: %10f\n", sigma4);
@@ -512,11 +532,11 @@ int main(void)
     printf("Box-Muller function:\n");
     int    testBins5[20] = {0};
     double x[2];
-    double mean5, sigma5;
+    double mean5, sigma5, boundLow, boundHigh;
     for (i = 1000; i <= 1000000; i *= 1000)
     {
         mean5 = sigma5 = 0;
-        printf("expecting around: mean = 0; sigma = 1 (sample size = %d)\n", i);
+        printf("expecting around: mean = 0; sigma = 1 (sample size = %d)\n", i * 2);
         for (j = 0; j < i; j++)
         {
             boxMuller(&x[0], &x[1], 0, 1);
@@ -543,7 +563,9 @@ int main(void)
         printf("approximate standard deviation: %10f\n", sigma5);
         for (j = 0; j < 20; j++)
         {
-            printf("in [%f, %f[: %d\n", (j - 10.0) / 10, (j - 10.0) / 10 + 0.1, testBins5[j]);
+            boundLow  = (j - 10.0) / 10;
+            boundHigh = boundLow + 0.1;
+            printf("in [%f, %f[: %d\n", boundLow, boundHigh, testBins5[j]);
         }
     }
 

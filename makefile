@@ -1,7 +1,7 @@
 CC=gcc
 
 CFLAGS=-c -Wall
-LDFLAGS=
+LDFLAGS=-lm
 SOURCES=TP2/main.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=prog
