@@ -186,6 +186,9 @@ double genrand_real3(void)
 
 // let me have this!
 #define TAU (2*M_PI)
+#define DEBUG printf("file %s; line %d\n", __FILE__, __LINE__);
+#define FAIL_OUT DEBUG exit(EXIT_FAILURE);
+#define MALLOC_FAIL printf("!_malloc failed_!\n"); FAIL_OUT
 
 /**
  * uniform
@@ -212,10 +215,72 @@ double *mkArr(int n)
     res = calloc(n, sizeof(double));
     if (res == NULL)
     {
-        printf("CALLOC FAILURE");
-        exit(EXIT_FAILURE);
+        MALLOC_FAIL
     }
     return res;
+}
+
+int *mkArr_int(int n)
+{
+    int *res = NULL;
+    res = malloc(sizeof(int) * n);
+    if (res == NULL)
+    {
+        MALLOC_FAIL
+    }
+    return res;
+}
+
+/**
+ * free2d
+ * frees a 2d array of doubles
+ * @param arr said array
+ * @param n outer size of said array
+ */
+void free2d(double **arr, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (arr[i] != NULL)
+        {
+            free(arr[i]);
+        }
+    }
+    free(arr);
+}
+
+/**
+ * mk2tuplesArr
+ * makes an array of 2-tuples of real numbers
+ * @param n outer size of desired array
+ * @return said array
+ */
+double **mk2tuplesArr(int n)
+{
+    int    hasFailed = 0;
+    double **res     = NULL;
+    res = (double **) malloc(sizeof(double *) * n);
+    if (res == NULL)
+    {
+        MALLOC_FAIL
+    }
+    for (int i = 0; i < n; i++)
+    {
+        res[i] = NULL;
+        res[i] = (double *) malloc(sizeof(double) * 2);
+        if (res[i] == NULL)
+        {
+            hasFailed = 1;
+        }
+    }
+    if (hasFailed)
+    {
+        free2d(res, n);
+        MALLOC_FAIL
+    } else
+    {
+        return res;
+    }
 }
 
 /**
@@ -250,7 +315,7 @@ double *cdf(int n, const int *obs)
     if ((n < 1) || (obs == NULL))
     {
         printf("cdf: please provide a non-null array, and a strictly positive size for it\n");
-        exit(EXIT_FAILURE);
+        FAIL_OUT
     }
 
     int    i, j;
@@ -280,7 +345,7 @@ double *cdf(int n, const int *obs)
             cdf[i] += pdf[j];
         }
     }
-
+    free(pdf);
     return cdf;
 }
 
@@ -296,44 +361,21 @@ double negExp(double m)
 }
 
 /**
- * d6
- * gives probability for x to be the outcome of a 6-sided-die throw
- * @param x outcome tested for
- * @return probability of said outcome, in [0, 1]
+ * ndn
+ * throws a given number of dice with a given number of sides
+ * @param throws number of throws
+ * @param sides number of sides
+ * @return total result
  */
-double d6(double x)
+int ndn(int throws, int sides)
 {
-    if ((x >= 1) && (x <= 6))
-    {
-        return (1.0 / 6);
-    } else
-    {
-        return 0.0;
-    }
-}
+    int res = 0;
 
-/**
- * rejection algorithm to generate a random number according to a PDF
- * @param xMax upper bound of said random number
- * @param xMin lower bound of said random number
- * @param size sample size
- * @param fun a PDF (probability distribution function)
- * @return a random number according to a PDF
- */
-double rejection(int xMax, int xMin, int size, double (*pdf)(double))
-{
-    double yMax = xMax * size;
-    while (1)
+    for (int i = 0; i < throws; i++)
     {
-        double xRdm = genrand_real1();
-        double yRdm = genrand_real1();
-        double x    = xMin + xRdm * (xMax - xMin);
-        double y    = yMax * yRdm;
-        if (y <= (*pdf)(x))
-        {
-            return x;
-        }
+        res += (int) (1 + genrand_real1() * sides);
     }
+    return res;
 }
 
 /**
@@ -391,7 +433,7 @@ int main(void)
         idx        = (int) uniformRet + 88;
 
         mean2 += uniformRet;
-        // making sure not to conflate -0.x and +0.x
+        // making sure not to conflate -0.boxMulRet and +0.boxMulRet
         if (uniformRet < 0)
         {
             testBins2[idx] += 1;
@@ -461,6 +503,7 @@ int main(void)
         printf("sample size = %d: ", i);
         printArrMsg_f("DED_%:", testBins3, 6);
     }
+    free(cdf3b);
     printf("########### 4 ###########\n");
 
     double cuml4;
@@ -501,99 +544,104 @@ int main(void)
 
     printf("########### 5 & EXTRA ###########\n");
 
-    // the 'many' variable below can be increased, but the relevant functions get really slow (10sec+) in the 10^6 range
-    int    many  = 100000, throws = 20;
-    double mean4 = 0, sigma4 = 0, rejectionRet;
+    int    many    = 1000000, throws = 20, tmp;
+    double mean5a  = 0, sigma5a = 0;
+    int    *ndnRet = mkArr_int(many);
     printf
             (
-                    "sample size = %d: rejection function with 20d6\n"
-                    "expecting around: mean = 3.5; sigma = %10f\n",
-                    many, sqrt(17.5 / 6)
+                    "sample size = %d throws of 20 d6s\n"
+                    "expecting around: mean = %10.8f ; sigma = %10.8f\n",
+                    many, (throws * 21.0) / 6, sqrt(throws * (35.0 / 12))
             );
-    printf("'many' = %d\n", many);
 
     for (i = 0; i < many; i++)
     {
-        mean4 += rejection(6, 1, throws, &d6);
+        tmp = ndn(throws, 6);
+        ndnRet[i] = tmp;
+        mean5a += tmp;
     }
-    mean4 /= many;
-    printf("using our rejection function\napproximate mean for d6 throws: %10f\n", mean4);
+
+    mean5a /= many;
+    printf("approximate mean for 20 d6 throws: %10f\n", mean5a);
 
     //sum of squares of distances
-    for (i = 0; i < many; i++)
+    for (i  = 0; i < many; i++)
     {
-        sigma4 += pow((rejection(6, 1, throws, &d6) - mean4), 2);
+        sigma5a += (pow((ndnRet[i] - mean5a), 2));
     }
-
-    sigma4 = sqrt((sigma4) / many); // standard deviation
-    printf("approximate standard deviation for d6 throws: %10f\n", sigma4);
+    sigma5a = sqrt(sigma5a / many); // standard deviation
+    printf("approximate population standard deviation for 20 d6 throws: %10.8f\n", sigma5a);
 
     printf("Box-Muller function:\n");
     int    testBins5[20] = {0};
-    double x[2]; // preparing a 2-tuple for our boxMuller outcomes
-    double mean5, sigma5, boundLow, boundHigh;
+    double mean5b, sigma5b, boundLow, boundHigh, tmp_f;
+    double **boxMulRet;
     for (i = 1000; i <= 1000000; i *= 1000)
     {
-        mean5 = sigma5 = 0;
+        boxMulRet = mk2tuplesArr(i);
+        mean5b    = sigma5b = 0;
         printf("expecting around: mean = 0; sigma = 1 (sample size = %d)\n", i * 2);
         for (j = 0; j < i; j++)
         {
-            boxMuller(&x[0], &x[1], 0, 1);
+            boxMuller(&boxMulRet[j][0], &boxMulRet[j][1], 0, 1);
             for (k = 0; k < 2; k++) // checking both numbers from box&muller
             {
-                mean5 += x[k];
-                if ((x[k] >= -1) && (x[k] <= 1))
+                tmp_f = boxMulRet[j][k];
+                mean5b += tmp_f;
+                if ((tmp_f >= -1) && (tmp_f <= 1))
                 {
-                    testBins5[(int) (x[k] * 10 + 10)] += 1; //[-1, 1] --> [0, 20]
+                    testBins5[(int) (tmp_f * 10 + 10)] += 1; //[-1, 1] --> [0, 20]
                 }
             }
         }
-        mean5 /= 2 * i;
-        printf("approximate mean: %10f\n", mean5);
-        for (j = 0; j < i; j++)
+        mean5b /= 2 * i;
+        printf("approximate mean: %10f\n", mean5b);
+        for (j  = 0; j < i; j++)
         {
-            boxMuller(&x[0], &x[1], 0, 1);
-            for (k = 0; k < 2; k++) // still checking both numbers from box&muller
+            for (k = 0; k < 2; k++)
             {
-                sigma5 += pow((x[k] - mean5), 2);
+                sigma5b += pow((boxMulRet[j][k] - mean5b), 2);
             }
         }
-        sigma5 = sqrt(sigma5 / (2 * i));
-        printf("approximate standard deviation: %10f\n", sigma5);
+        sigma5b = sqrt(sigma5b / (2 * i));
+        printf("approximate standard deviation: %10f\n", sigma5b);
         for (j = 0; j < 20; j++)
         {
             boundLow  = (j - 10.0) / 10;
             boundHigh = boundLow + 0.1;
             printf("in [%f, %f[: %d\n", boundLow, boundHigh, testBins5[j]);
         }
+        free2d(boxMulRet, i);
     }
 
     printf("And now for mean = 10, sigma = 3 (sample size = 2000000)\n");
-    mean5  = sigma5 = 0;
-    for (i = 0; i < 1000000; i++)
+    mean5b = sigma5b = 0;
+    int sample5b = 1000000;
+    boxMulRet = mk2tuplesArr(sample5b);
+    for (i = 0; i < sample5b; i++)
     {
-        boxMuller(&x[0], &x[1], 10, 3);
+        boxMuller(&boxMulRet[i][0], &boxMulRet[i][1], 10, 3);
         for (j = 0; j < 2; j++)
         {
-            mean5 += x[j];
-            if ((x[j] >= 0) && (x[j] <= 20))
+            tmp_f = boxMulRet[i][j];
+            mean5b += tmp_f;
+            if ((tmp_f >= 0) && (tmp_f <= 20))
             {
-                testBins5[(int) x[j]] += 1;
+                testBins5[(int) tmp_f] += 1;
             }
         }
     }
-    mean5 /= 2000000;
-    printf("approximate mean: %10f\n", mean5);
-    for (i = 0; i < 1000000; i++)
+    mean5b /= sample5b * 2;
+    printf("approximate mean: %10f\n", mean5b);
+    for (i  = 0; i < sample5b; i++)
     {
-        boxMuller(&x[0], &x[1], 10, 3);
         for (j = 0; j < 2; j++)
         {
-            sigma5 += pow((x[j] - mean5), 2);
+            sigma5b += pow((boxMulRet[i][j] - mean5b), 2);
         }
     }
-    sigma5 = sqrt(sigma5 / 2000000);
-    printf("approximate standard deviation: %10f\n", sigma5);
+    sigma5b = sqrt(sigma5b / (sample5b * 2));
+    printf("approximate standard deviation: %10f\n", sigma5b);
     for (j = 0; j < 20; j++)
     {
         printf("in [%d, %d[: %d\n", j, j + 1, testBins5[j]);
@@ -616,6 +664,5 @@ int main(void)
      *                      etc.
      * normal:              https://commons.apache.org/proper/commons-math/javadocs/api-3.6/org/apache/commons/math3/distribution/NormalDistribution.html
      */
-
     return 0;
 }
