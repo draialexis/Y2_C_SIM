@@ -542,7 +542,7 @@ int main(void)
     }
     printf("(see report for scatter plots of these tests)\n");
 
-    printf("########### 5 & EXTRA ###########\n");
+    printf("########### 5 ###########\n");
 
     int    many    = 1000000, throws = 20, tmp;
     double mean5a  = 0, sigma5a = 0;
