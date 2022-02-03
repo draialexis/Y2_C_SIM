@@ -220,10 +220,16 @@ double *mkArr(int n)
     return res;
 }
 
+/**
+ * mkArr_int
+ * creates an array of ints, initialized at 0 s
+ * @param n size of said array
+ * @return said array
+ */
 int *mkArr_int(int n)
 {
     int *res = NULL;
-    res = malloc(sizeof(int) * n);
+    res = calloc(n, sizeof(int));
     if (res == NULL)
     {
         MALLOC_FAIL
@@ -419,7 +425,7 @@ int main(void)
         printf("%10.8f ", genrand_real2());
         if (i % 5 == 4) printf("\n");
     }
-    // make sure that it checks out compared to ../matsumoto/mt19937ar.out
+    // making sure that it checks out compared to ../matsumoto/mt19937ar.out
 
     printf("########### 2 ###########\n");
 
@@ -465,7 +471,7 @@ int main(void)
         {
             rand3a = genrand_real1();
             if (rand3a < 0.5) a++;
-            else if (rand3a < 0.6) b++;
+            else if (rand3a < 0.65) b++;
             else c++;
         }
         printf("individuals in class A = %10f pct\n"
@@ -480,6 +486,7 @@ int main(void)
     double rand3b;
     double testBins3[6] = {0.0};
     printArrMsg_f("CDF:", cdf3b, 6);
+
     for (i = 1000; i <= 1000000; i *= 1000)
     {
         for (j = 0; j < i; j++)
@@ -507,35 +514,36 @@ int main(void)
     printf("########### 4 ###########\n");
 
     double cuml4;
-    printf("expecting around: average = 10.0\n");
+    double mean4 = 11.0;
+    printf("expecting around: average = %10.8f\n", mean4);
     for (i = 1000; i <= 1000000; i *= 1000)
     {
         cuml4 = 0;
 
         for (j = 0; j < i; j++)
         {
-            cuml4 += negExp(10.0);
+            cuml4 += negExp(mean4);
         }
         printf("sample size = %d: average = %10f\n", i, cuml4 / i);
     }
 
-    int testBins4[21] = {0};
+    int testBins4[22] = {0};
     int negExpRet;
     for (i = 1000; i <= 1000000; i *= 1000)
     {
         printf("test bins, sample size = %d\n", i);
         for (j = 0; j < i; j++)
         {
-            negExpRet = (int) negExp(10.0);
-            if (negExpRet < 20)
+            negExpRet = (int) negExp(11.0);
+            if (negExpRet < 21)
             {
                 testBins4[negExpRet] += 1;
             } else
             {
-                testBins4[20] += 1;
+                testBins4[21] += 1;
             }
         }
-        for (j = 0; j < 21; j++)
+        for (j = 0; j < 22; j++)
         {
             printf("in box %d: %d\n", j, testBins4[j]);
         }
@@ -544,9 +552,10 @@ int main(void)
 
     printf("########### 5 ###########\n");
 
-    int    many    = 1000000, throws = 20, tmp;
-    double mean5a  = 0, sigma5a = 0;
-    int    *ndnRet = mkArr_int(many);
+    int    testBins5a[150] = {0};
+    int    many            = 1000000, throws = 30, tmp;
+    double mean5a          = 0, sigma5a = 0;
+    int    *ndnRet         = mkArr_int(many);
     printf
             (
                     "sample size = %d throws of 20 d6s\n"
@@ -556,7 +565,8 @@ int main(void)
 
     for (i = 0; i < many; i++)
     {
-        tmp = ndn(throws, 6);
+        tmp       = ndn(throws, 6);
+        testBins5a[tmp - 30] += 1; //[30, 180] --> [0, 150]
         ndnRet[i] = tmp;
         mean5a += tmp;
     }
@@ -572,9 +582,14 @@ int main(void)
     sigma5a = sqrt(sigma5a / many); // standard deviation
     printf("approximate population standard deviation for 20 d6 throws: %10.8f\n", sigma5a);
 
+    for (j = 0; j < 150; j++)
+    {
+        printf("in [%d, %d[: %d\n", j + 30, j + 31, testBins5a[j]);
+    }
+
     printf("Box-Muller function:\n");
-    int    testBins5[20] = {0};
-    double mean5b, sigma5b, boundLow, boundHigh, tmp_f;
+    int    testBins5b[20] = {0};
+    double mean5b, sigma5b, tmp_f, boundLow, boundHigh;
     double **boxMulRet;
     for (i = 1000; i <= 1000000; i *= 1000)
     {
@@ -590,7 +605,7 @@ int main(void)
                 mean5b += tmp_f;
                 if ((tmp_f >= -1) && (tmp_f <= 1))
                 {
-                    testBins5[(int) (tmp_f * 10 + 10)] += 1; //[-1, 1] --> [0, 20]
+                    testBins5b[(int) (tmp_f * 10 + 10)] += 1; //[-1, 1] --> [0, 20]
                 }
             }
         }
@@ -609,25 +624,26 @@ int main(void)
         {
             boundLow  = (j - 10.0) / 10;
             boundHigh = boundLow + 0.1;
-            printf("in [%f, %f[: %d\n", boundLow, boundHigh, testBins5[j]);
+            printf("in [%f, %f[: %d\n", boundLow, boundHigh, testBins5b[j]);
         }
         free2d(boxMulRet, i);
     }
 
-    printf("And now for mean = 10, sigma = 3 (sample size = 2000000)\n");
+    printf("And now for mean = 12.0, sigma = 3.0 (sample size = 2000000)\n");
+    int testBins5b_12[24] = {0};
     mean5b = sigma5b = 0;
-    int sample5b = 1000000;
-    boxMulRet = mk2tuplesArr(sample5b);
+    int    sample5b       = 1000000;
+    double **boxMulRet_12 = mk2tuplesArr(sample5b);
     for (i = 0; i < sample5b; i++)
     {
-        boxMuller(&boxMulRet[i][0], &boxMulRet[i][1], 10, 3);
+        boxMuller(&boxMulRet_12[i][0], &boxMulRet_12[i][1], 12, 3);
         for (j = 0; j < 2; j++)
         {
-            tmp_f = boxMulRet[i][j];
+            tmp_f = boxMulRet_12[i][j];
             mean5b += tmp_f;
-            if ((tmp_f >= 0) && (tmp_f <= 20))
+            if ((tmp_f >= 0) && (tmp_f <= 24))
             {
-                testBins5[(int) tmp_f] += 1;
+                testBins5b_12[(int) tmp_f] += 1;
             }
         }
     }
@@ -637,14 +653,15 @@ int main(void)
     {
         for (j = 0; j < 2; j++)
         {
-            sigma5b += pow((boxMulRet[i][j] - mean5b), 2);
+            sigma5b += pow((boxMulRet_12[i][j] - mean5b), 2);
         }
     }
     sigma5b = sqrt(sigma5b / (sample5b * 2));
     printf("approximate standard deviation: %10f\n", sigma5b);
-    for (j = 0; j < 20; j++)
+    for (j = 0; j < 24; j++)
     {
-        printf("in [%d, %d[: %d\n", j, j + 1, testBins5[j]);
+//        printf("in [%d, %d[: %d\n", j, j + 1, testBins5b_12[j]);
+        printf("%d, ", testBins5b_12[j]);
     }
     printf("(see report for scatter plots of these tests)\n");
 
