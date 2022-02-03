@@ -190,17 +190,9 @@ double genrand_real3(void)
 #define FAIL_OUT DEBUG exit(EXIT_FAILURE);
 #define MALLOC_FAIL printf("!_malloc failed_!\n"); FAIL_OUT
 
-/**
- * uniform
- * gives a random real number within an interval
- * @param a lower bound
- * @param b upper bound
- * @return said random real number
- */
-double uniform(double a, double b)
-{
-    return a + genrand_real1() * (b - a);
-}
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////   ANNEXES   ///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 /**
  * mkArr
@@ -309,16 +301,32 @@ void printArrMsg_f(char *msg, double *arr, int n)
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////   BUSINESS   //////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * uniform
+ * gives a random real number within an interval
+ * @param inLo lower bound
+ * @param inHi upper bound
+ * @return said random real number
+ */
+double uniform(double inLo, double inHi)
+{
+    return inLo + genrand_real1() * (inHi - inLo);
+}
+
 /**
  * cdf
  * finds the cumulative distribution function from basic observation data
- * @param n size of observation data array, strictly positive
- * @param obs said array, of ints, non null
+ * @param inSize size of observation data array, strictly positive
+ * @param inObs said array, of ints, non null
  * @return an array of doubles, CDF
  */
-double *cdf(int n, const int *obs)
+double *cdf(int inSize, const int *inObs)
 {
-    if ((n < 1) || (obs == NULL))
+    if ((inSize < 1) || (inObs == NULL))
     {
         printf("cdf: please provide a non-null array, and a strictly positive size for it\n");
         FAIL_OUT
@@ -326,25 +334,25 @@ double *cdf(int n, const int *obs)
 
     int    i, j;
     int    ttl  = 0;
-    double *pdf = mkArr(n);
+    double *pdf = mkArr(inSize);
 
     // finding sample size
-    for (i = 0; i < n; i++)
+    for (i = 0; i < inSize; i++)
     {
-        ttl += obs[i];
+        ttl += inObs[i];
     }
 
     // 3.b.a producing probability distribution function
-    for (i = 0; i < n; i++)
+    for (i = 0; i < inSize; i++)
     {
-        pdf[i] = (double) obs[i] / ttl;
+        pdf[i] = (double) inObs[i] / ttl;
     }
     printArrMsg_f("PDF:", pdf, 6);
 
-    double *cdf = mkArr(n);
+    double *cdf = mkArr(inSize);
 
     // 3.b.b producing cumulative distribution function
-    for (i = 0; i < n; i++)
+    for (i = 0; i < inSize; i++)
     {
         for (j = 0; j <= i; j++)
         {
@@ -358,53 +366,58 @@ double *cdf(int n, const int *obs)
 /**
  * negExp
  * implements the negative exponential function: an exponential continuous distribution
- * @param m a desired mean
+ * @param inMean a desired mean
  * @return result of the formula: -m * ln(1 - rdm) (rdm being a double in [0, 1[ so as not to ask ln(0))
  */
-double negExp(double m)
+double negExp(double inMean)
 {
-    return (-m * log(1 - genrand_real2()));
+    return (-inMean * log(1 - genrand_real2()));
 }
 
 /**
  * ndn
  * throws a given number of dice with a given number of sides
- * @param throws number of throws
- * @param sides number of sides
+ * @param inThrows number of throws
+ * @param inSides number of sides
  * @return total result
  */
-int ndn(int throws, int sides)
+int ndn(int inThrows, int inSides)
 {
     int res = 0;
 
-    for (int i = 0; i < throws; i++)
+    for (int i = 0; i < inThrows; i++)
     {
-        res += (int) (1 + genrand_real1() * sides);
+        res += (int) (1 + genrand_real1() * inSides);
     }
     return res;
 }
 
 /**
  * boxMuller
- * procedure to generate two random numbers uniformly distributed around a given mean according to a given sigma
- * @param x1 pointer to a double, will house first random number
- * @param x2 pointer to a double, will house second random number
- * @param mean said mean
- * @param sigma said sigma (standard deviation)
+ * procedure to generate two random numbers uniformly normally distributed around a given mean according to a given sigma
+ * @param inX1 pointer to a double, will house first random number
+ * @param inX2 pointer to a double, will house second random number
+ * @param inMean said mean
+ * @param inSigma said sigma (standard deviation)
  */
-void boxMuller(double *x1, double *x2, double mean, double sigma)
+void boxMuller(double *inX1, double *inX2, double inMean, double inSigma)
 {
     //with some help from https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
-    double r1  = genrand_real3();
-    double r2  = genrand_real3();
-    double mag = sigma * sqrt((-2 * log(r1)));
-    *x1 = mag * cos(TAU * r2) + mean;
-    *x2 = mag * sin(TAU * r2) + mean;
+    double r1  = genrand_real2();
+    double r2  = genrand_real2();
+    double mag = inSigma * sqrt((-2 * log(r1)));
+    *inX1 = mag * cos(TAU * r2) + inMean;
+    *inX2 = mag * sin(TAU * r2) + inMean;
 }
+
+///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////   TESTS   //////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 int main(void)
 {
+    // init and ### 1 ### by M.M.
     int           i, j, k;
     unsigned long init[4] = {0x123, 0x234, 0x345, 0x456};
     int           length  = 4;
@@ -660,8 +673,7 @@ int main(void)
     printf("approximate standard deviation: %10f\n", sigma5b);
     for (j = 0; j < 24; j++)
     {
-//        printf("in [%d, %d[: %d\n", j, j + 1, testBins5b_12[j]);
-        printf("%d, ", testBins5b_12[j]);
+        printf("in [%d, %d[: %d\n", j, j + 1, testBins5b_12[j]);
     }
     printf("(see report for scatter plots of these tests)\n");
 
