@@ -2,7 +2,7 @@ CC=gcc
 
 CFLAGS=-c -Wall
 LDFLAGS=-lm
-SOURCES=TP3/main.c TP3/mt.c
+SOURCES=main.c mt.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=prog
 
