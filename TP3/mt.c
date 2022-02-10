@@ -46,7 +46,7 @@
 #include "mt.h"
 
 static unsigned long mt[N]; /* the array for the state vector  */
-static int mti = N + 1; /* mti==N+1 means mt[N] is not initialized */
+static int           mti = N + 1; /* mti==N+1 means mt[N] is not initialized */
 
 void init_genrand(unsigned long s)
 {
@@ -103,7 +103,7 @@ void init_by_array(unsigned long init_key[], int key_length)
 
 unsigned long genrand_int32(void)
 {
-    unsigned long y;
+    unsigned long        y;
     static unsigned long mag01[2] = {0x0UL, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 

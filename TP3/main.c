@@ -20,7 +20,7 @@
 
 double simPi(int inPoints)
 {
-    double m, x, y;
+    double   m, x, y;
     for (int i = 0; i < inPoints; i++)
     {
         x = genrand_real1();
@@ -40,9 +40,9 @@ double simPi(int inPoints)
 int main(void)
 {
     // init by M.M.
-    int i, j, k;
+    int           i, j, k;
     unsigned long init[4] = {0x123, 0x234, 0x345, 0x456};
-    int length = 4;
+    int           length  = 4;
 
     init_by_array(init, length);
 

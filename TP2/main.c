@@ -500,7 +500,7 @@ int main(void)
     double testBins3[6] = {0.0};
     printArrMsg_f("CDF:", cdf3b, 6);
 
-    for (i = 1000; i <= 1000000; i *= 1000)
+    for (i       = 1000; i <= 1000000; i *= 1000)
     {
         for (j = 0; j < i; j++)
         {
