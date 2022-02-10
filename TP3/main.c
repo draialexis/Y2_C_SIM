@@ -28,8 +28,9 @@
  */
 double simPi(int inPoints)
 {
-    double   m = 0, x, y;
-    for (int i = 0; i < inPoints; i++)
+    double m = 0, x, y;
+    int    i;
+    for (i = 0; i < inPoints; i++)
     {
         x = genrand_real1();
         y = genrand_real1();
@@ -38,7 +39,7 @@ double simPi(int inPoints)
             m++;
         }
     }
-    return (m / inPoints) * 4;
+    return (m / (double) inPoints) * 4;
 }
 
 /*-------------------------------------------------------------------------------*/
@@ -48,7 +49,7 @@ double simPi(int inPoints)
 int main(void)
 {
     // init by M.M.
-    int           i, j, k;
+    int           i;
     unsigned long init[4] = {0x123, 0x234, 0x345, 0x456};
     int           length  = 4;
 
@@ -72,10 +73,9 @@ int main(void)
 
     printf("########### 2 ###########\n");
 
-    for (i = 1000; i <= 1000000000; i *= 10)
-    {
-        printf("M-C Pi approx., with 10^%d points: %10.8f\n", (int) log10((double) i), simPi(i));
-    }
+    printf("M-C Pi approx., with %d points: %10.8f\n", 1000, simPi(1000));
+    printf("M-C Pi approx., with %d points: %10.8f\n", 1000000, simPi(1000000));
+    printf("M-C Pi approx., with %d points: %10.8f\n", 1000000000, simPi(1000000000));
 
     return 0;
 }
