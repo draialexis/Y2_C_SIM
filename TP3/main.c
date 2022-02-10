@@ -73,8 +73,10 @@ int main(void)
 
     printf("########### 2 ###########\n");
 
-    printf("M-C Pi approx., with %d points: %10.8f\n", 1000, simPi(1000));
-    printf("M-C Pi approx., with %d points: %10.8f\n", 1000000, simPi(1000000));
+    for (i = 1000; i <= 100000000; i *= 10)
+    {
+        printf("M-C Pi approx., with %d points: %10.8f\n", i, simPi(i));
+    }
     printf("M-C Pi approx., with %d points: %10.8f\n", 1000000000, simPi(1000000000));
 
     return 0;
