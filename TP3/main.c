@@ -6,10 +6,6 @@
 #include <stdio.h>
 #include "mt.h"
 
-#define DEBUG printf("file %s; line %d\n", __FILE__, __LINE__);
-#define FAIL_OUT DEBUG exit(EXIT_FAILURE);
-#define MALLOC_FAIL printf("!_malloc failed_!\n"); FAIL_OUT
-
 #define MAX_POINTS 1000000000
 #define MIL 1000000
 #define SIZE_2 30
@@ -80,7 +76,7 @@ int main(void)
     printf("\n###################### 1 ######################\n");
 
     printf("\nHi there, person correcting this. You might be here a while, simPi() is pretty slow.\n"
-           "To speed up execution, the pre-processor constant MAX_POINTS can be decreased (on line 13).\n"
+           "To speed up execution, the pre-processor constant MAX_POINTS can be decreased (on line 9).\n"
            "Thank you for your time!\n\n");
 
     unsigned long long i_l;
