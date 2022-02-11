@@ -10,7 +10,7 @@
 //#define MAX_POINTS 10000000 //faster
 #define MIL 1000000
 #define SIZE_2 30
-#define SIZE_2_MAX 50
+#define SIZE_2_MAX 30
 #define SIZE_3_MAX 30
 
 /*-------------------------------------------------------------------------------*/
