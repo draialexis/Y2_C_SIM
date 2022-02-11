@@ -79,11 +79,13 @@ int main(void)
            "To speed up execution, the pre-processor constant MAX_POINTS can be decreased (on line 9).\n"
            "Thank you for your time!\n\n");
 
+    printf("\nTesting simPi() with varying # of points, trying to reach values close to pi\n");
+
     unsigned long long i_l;
     i_l = 1000;
     while (i_l <= MAX_POINTS)
     {
-        printf("M-C Pi approx., with %llu points: %10.8f\n", i_l, simPi(i_l));
+        printf("%llu points: %10.8f\n", i_l, simPi(i_l));
         i_l *= 10;
         // going power of 10 by power of 10
         // to look for intervals where decimal precision improves past certain thresholds
@@ -106,7 +108,7 @@ int main(void)
             res2[i] = tmp;
             mean2 += tmp;
         }
-        printf("\nM-C Pi approx., with %llu points, sample size = %d\n", i_l, SIZE_2);
+        printf("\n%llu points, sample size = %d\n", i_l, SIZE_2);
         for (i = 0; i < SIZE_2; i++)
         {
             printf("%10.8f, ", res2[i]);
@@ -132,7 +134,7 @@ int main(void)
             tmp = simPi(MIL);
             mean2 += tmp;
         }
-        printf("\nM-C Pi approx., with %d points, sample size = %d\n", MIL, i);
+        printf("\n%d points, sample size = %d\n", MIL, i);
         mean2 /= i;
         printf("mean = %10.8f\n", mean2);
         err2 = fabs(mean2 - M_PI);
@@ -169,7 +171,7 @@ int main(void)
             res3[j] = tmp;
             mean3 += tmp;
         }
-        printf("\nM-C Pi approx., with %d points, sample size = %d\n", MIL, i);
+        printf("\n%d points, sample size = %d\n", MIL, i);
         mean3 /= i;
         printf("mean = %10.8f\n", mean3);
 
