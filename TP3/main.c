@@ -58,7 +58,7 @@ int main(void)
 
     init_by_array(init, length);
 
-    printf("########### 0 ###########\n");
+    printf("###################### 0 ######################\n");
 
     printf("1000 outputs of genrand_int32()\n");
     for (i = 0; i < 1000; i++)
@@ -74,9 +74,10 @@ int main(void)
     }
     // making sure that it checks out compared to ../matsumoto/mt19937ar.out
 
-    printf("########### 1 ###########\n");
+    printf("\n###################### 1 ######################\n");
     printf("\nHi there, person correcting this. You're gonna be there a while, simPi() is slow.\n"
-           "For your convenience, the pre-processor constant MAX_POINTS can be decreased, on line 13\n\n");
+           "For your convenience, the pre-processor constant MAX_POINTS can be decreased (on line 13).\n"
+           "Thank you for your time!\n\n");
     unsigned long long i_l;
     i_l = 1000;
     while (i_l <= MAX_POINTS)
@@ -85,7 +86,7 @@ int main(void)
         i_l *= 10;
     }
 
-    printf("########### 2 ###########\n");
+    printf("\n###################### 2 ######################\n");
 
     double res2[SIZE_2];
     double mean2, tmp, err2, rel_err2;
