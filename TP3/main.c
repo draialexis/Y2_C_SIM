@@ -7,6 +7,7 @@
 #include "mt.h"
 
 #define MAX_POINTS 1000000000
+//#define MAX_POINTS 10000000 //faster
 #define MIL 1000000
 #define SIZE_2 30
 #define SIZE_2_MAX 50
@@ -76,7 +77,7 @@ int main(void)
     printf("\n###################### 1 ######################\n");
 
     printf("\nHi there, person correcting this. You might be here a while, simPi() is pretty slow.\n"
-           "To speed up execution, the pre-processor constant MAX_POINTS can be decreased (on line 9).\n"
+           "To speed up execution, you may comment line 9 and uncomment line 10.\n"
            "Thank you for your time!\n\n");
 
     printf("\nTesting simPi() with varying # of points, trying to reach values close to pi\n");
