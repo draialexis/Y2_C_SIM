@@ -10,6 +10,9 @@
 #define FAIL_OUT DEBUG exit(EXIT_FAILURE);
 #define MALLOC_FAIL printf("!_malloc failed_!\n"); FAIL_OUT
 
+#define MAX_POINTS 1000000000
+#define SIZE_2 30
+
 /*-------------------------------------------------------------------------------*/
 /*-----------------------------    ANNEXES    -----------------------------------*/
 /*-------------------------------------------------------------------------------*/
@@ -26,15 +29,15 @@
  * @param inPoints number of random points used to approximate pi
  * @return said approximation of pi
  */
-double simPi(int inPoints)
+double simPi(unsigned long long inPoints)
 {
-    double m = 0, x, y;
-    int    i;
-    for (i = 0; i < inPoints; i++)
+    double             x, y, m = 0;
+    unsigned long long i_l     = 0;
+    while (i_l++ < inPoints)
     {
         x = genrand_real1();
         y = genrand_real1();
-        if (pow(x, 2) + pow(y, 2) < 1)
+        if ((x * x) + (y * y) < 1)
         {
             m++;
         }
@@ -55,7 +58,7 @@ int main(void)
 
     init_by_array(init, length);
 
-    printf("########### 1 ###########\n");
+    printf("########### 0 ###########\n");
 
     printf("1000 outputs of genrand_int32()\n");
     for (i = 0; i < 1000; i++)
@@ -71,13 +74,46 @@ int main(void)
     }
     // making sure that it checks out compared to ../matsumoto/mt19937ar.out
 
+    printf("########### 1 ###########\n");
+    printf("\nHi there, person correcting this. You're gonna be there a while, simPi() is slow.\n"
+           "For your convenience, the pre-processor constant MAX_POINTS can be decreased, on line 13\n\n");
+    unsigned long long i_l;
+    i_l = 1000;
+    while (i_l <= MAX_POINTS)
+    {
+        printf("M-C Pi approx., with %llu points: %10.8f\n", i_l, simPi(i_l));
+        i_l *= 10;
+    }
+
     printf("########### 2 ###########\n");
 
-    for (i = 1000; i <= 100000000; i *= 10)
+    double res2[SIZE_2];
+    double mean2, tmp, err2, rel_err2;
+    i_l = 1000;
+    while (i_l <= MAX_POINTS)
     {
-        printf("M-C Pi approx., with %d points: %10.8f\n", i, simPi(i));
+        mean2  = 0.0;
+        for (i = 0; i < SIZE_2; i++)
+        {
+            tmp = simPi(i_l);
+            res2[i] = tmp;
+            mean2 += tmp;
+        }
+        printf("\nM-C Pi approx., with %llu points, sample size = %d\n", i_l, SIZE_2);
+        for (i = 0; i < SIZE_2; i++)
+        {
+            printf("%10.8f, ", res2[i]);
+        }
+
+        mean2 /= SIZE_2;
+        printf("mean = %10.8f\n", mean2);
+        err2 = fabs(mean2 - M_PI);
+        printf("absolute error = %10.8f\n", err2);
+        rel_err2 = err2 / M_PI;
+        printf("relative error = %10.8f\n", rel_err2);
+
+        i_l *= 1000;
     }
-    printf("M-C Pi approx., with %d points: %10.8f\n", 1000000000, simPi(1000000000));
 
     return 0;
 }
