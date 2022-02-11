@@ -190,8 +190,8 @@ int main(void)
         conf_rads3[i - 2] = std_err3 * t_vals[i - 1];
         printf("confidence radius = %10.8f\n", conf_rads3[i - 2]);
         printf("confidence interval = [%10.8f, %10.8f]\n",
-               mean3 - conf_rads3[i - 2],
-               mean3 + conf_rads3[i - 2]);
+               M_PI - conf_rads3[i - 2], // using the theoretical mean, since we know it
+               M_PI + conf_rads3[i - 2]);
     }
 
     for (i = 0; i < SIZE_3_MAX - 1; i++)
