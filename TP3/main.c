@@ -102,7 +102,8 @@ int main(void)
            "to obtain a mean value closer to pi\n");
     while (i_l <= MAX_POINTS)
     {
-        mean2  = 0.0;
+        mean2 = 0.0;
+
         for (i = 0; i < SIZE_2; i++) // running SIZE_2 replicates, instead of 1
         {
             tmp = simPi(i_l);
